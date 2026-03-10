@@ -34,7 +34,7 @@
 - `server/`
   - Public HTTP API, request validation, orchestration, session handling, backend-to-agent coordination.
 - `agents/`
-  - Planned internal agent service for chat generation, tool calls, retrieval, and domain intelligence.
+  - Internal agent service for chat generation, tool calls, retrieval, and domain intelligence.
 - `server/app/api/`
   - FastAPI routes and request/response boundaries.
 - `server/app/services/`
@@ -76,6 +76,9 @@
   - `uv run lint-imports`
   - `uv run pytest tests/unit -q`
   - `uv run pytest tests/integration -q`
+- Agents checks from `agents/`:
+  - `uv sync`
+  - `uv run python scripts/smoke_test.py`
 - Frontend checks from `client/`:
   - `pnpm install --frozen-lockfile`
   - `pnpm run lint`
@@ -83,8 +86,10 @@
 - Local startup today:
   - `docker-compose up -d db`
   - `cd server && uv run alembic upgrade head && uv run uvicorn app.main:app --reload --port 8010`
+  - `cd agents && uv run adk api_server --host 0.0.0.0 --port 8020 .`
+  - `cd agents && uv run adk web --port 8001` (optional UI)
   - `cd client && pnpm install && pnpm run dev`
-- When `agents/` is added, update this file with its startup and validation commands in the same change that introduces the service.
+- When expanding `agents/`, keep startup and validation commands updated in this file.
 
 ## Current Coverage And Next-Step Expectations
 - Current backend tests cover health behavior and auth/password scaffolding.

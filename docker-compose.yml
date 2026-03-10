@@ -26,6 +26,14 @@ services:
       - "5173:80"
     depends_on:
       - api
+  agents:
+    build: ./agents
+    environment:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GOOGLE_GENAI_USE_VERTEXAI: ${GOOGLE_GENAI_USE_VERTEXAI:-false}
+      AGENT_MODEL: ${AGENT_MODEL:-gemini-2.0-flash}
+    ports:
+      - "8020:8020"
 
 volumes:
   postgres_data:

@@ -9,37 +9,77 @@ from app.core.config import Settings
 CHAT_TIMEOUT_SECONDS = 30.0
 
 
-def _artifact_or_none(payload: dict[str, Any]) -> dict[str, Any] | None:
-    artifact = payload.get("artifact")
-    if isinstance(artifact, dict):
-        return artifact
-    return None
+def _extract_message_from_events(events: list[dict[str, Any]]) -> str:
+    for event in reversed(events):
+        content = event.get("content")
+        if not isinstance(content, dict):
+            continue
+        role = content.get("role")
+        if role not in (None, "model"):
+            continue
+        parts = content.get("parts")
+        if not isinstance(parts, list):
+            continue
+        texts = [
+            part.get("text")
+            for part in parts
+            if isinstance(part, dict) and isinstance(part.get("text"), str)
+        ]
+        if texts:
+            return "\n".join(texts)
+    raise ValueError("Agent response did not include model text")
 
 
-def _risk_card_or_none(payload: dict[str, Any]) -> dict[str, Any] | None:
-    risk_card = payload.get("risk_card")
-    if isinstance(risk_card, dict):
-        return risk_card
-    return None
+async def _ensure_session(
+    client: httpx.AsyncClient,
+    base_url: str,
+    app_name: str,
+    user_id: str,
+    session_id: str,
+) -> None:
+    response = await client.post(
+        f"{base_url}/apps/{app_name}/users/{user_id}/sessions/{session_id}",
+        json=None,
+    )
+    if response.status_code in {200, 201, 204, 409}:
+        return
+    response.raise_for_status()
 
 
 async def get_chat_response(settings: Settings, session_id: str, message: str) -> dict[str, Any]:
     async with httpx.AsyncClient(timeout=CHAT_TIMEOUT_SECONDS) as client:
+        base_url = settings.agent_server_url.rstrip("/")
+        app_name = settings.agent_app_name
+        user_id = "metrosense"
+        await _ensure_session(
+            client=client,
+            base_url=base_url,
+            app_name=app_name,
+            user_id=user_id,
+            session_id=session_id,
+        )
         response = await client.post(
-            f"{settings.agent_server_url.rstrip('/')}/chat",
-            json={"session_id": session_id, "message": message},
+            f"{base_url}/run",
+            json={
+                "appName": app_name,
+                "userId": user_id,
+                "sessionId": session_id,
+                "newMessage": {"role": "user", "parts": [{"text": message}]},
+                "streaming": False,
+            },
         )
         response.raise_for_status()
-        payload = response.json()
+        events = response.json()
 
-    message_text = payload.get("message")
-    if not isinstance(message_text, str):
-        raise ValueError("Agent response must include a string 'message'")
+    if not isinstance(events, list):
+        raise ValueError("Agent response must be a list of events")
+
+    message_text = _extract_message_from_events(events)
 
     return {
         "message": message_text,
-        "risk_card": _risk_card_or_none(payload),
-        "artifact": _artifact_or_none(payload),
+        "risk_card": None,
+        "artifact": None,
     }
 
 

@@ -31,6 +31,10 @@ Full-stack scaffold with FastAPI + React + PostgreSQL. All tooling, quality gate
 │   ├── alembic/                 # Database migrations
 │   ├── tests/                   # Unit + integration tests
 │   └── pyproject.toml           # Dependencies + tool config
+├── agents/                      # ADK agent service (internal)
+│   ├── metrosearch_agent/        # Simple Google Search-enabled agent
+│   ├── scripts/                 # Smoke tests
+│   └── pyproject.toml           # Dependencies + tool config
 └── client/                      # React frontend
     ├── src/
     │   ├── App.tsx              # Router + pages
@@ -58,6 +62,16 @@ cd server
 uv sync --all-extras
 uv run alembic upgrade head
 uv run uvicorn app.main:app --reload --port 8010
+
+# Agents (separate terminal)
+cd agents
+uv sync
+export GOOGLE_API_KEY=your_key
+uv run adk api_server --host 0.0.0.0 --port 8020 .
+
+# Optional: ADK Web UI (separate terminal)
+cd agents
+uv run adk web --port 8001
 
 # Frontend (separate terminal)
 cd client
