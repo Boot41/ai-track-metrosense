@@ -3,12 +3,26 @@ from __future__ import annotations
 import pytest
 from httpx import AsyncClient
 
+from app.api.deps import require_user
+from app.db.models import User
+from app.main import app
 from app.services import agent_proxy
+
+
+@pytest.fixture
+def auth_override() -> None:
+    app.dependency_overrides[require_user] = lambda: User(
+        id=1,
+        email="test@example.com",
+        password_hash="x",
+    )
+    yield
+    app.dependency_overrides.pop(require_user, None)
 
 
 @pytest.mark.asyncio
 async def test_chat_returns_json_payload(
-    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch, auth_override: None
 ) -> None:
     async def _fake_chat_response(**_: object) -> dict[str, object]:
         return {
@@ -59,7 +73,7 @@ async def test_chat_returns_json_payload(
 
 @pytest.mark.asyncio
 async def test_chat_returns_agent_error_payload(
-    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch, auth_override: None
 ) -> None:
     async def _raise_error(**_: object) -> dict[str, object]:
         raise ValueError("bad payload")
@@ -82,7 +96,7 @@ async def test_chat_returns_agent_error_payload(
 
 @pytest.mark.asyncio
 async def test_api_health_degraded_when_agent_is_down(
-    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch, auth_override: None
 ) -> None:
     async def _fake_health(_: object) -> dict[str, str]:
         return {"backend": "ok", "agent": "down", "status": "degraded"}

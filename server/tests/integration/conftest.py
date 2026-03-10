@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
+import os
+import socket
+import threading
+import time
 
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+import uvicorn
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -18,6 +23,10 @@ from app.core.config import get_settings
 from app.db.base import Base
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.middleware.request_logging import RequestLoggingMiddleware
+from tests.integration.agent_stub import app as agent_stub_app
+
+AGENT_HOST = "127.0.0.1"
+AGENT_PORT = 18020
 
 
 def _create_test_app() -> FastAPI:
@@ -27,6 +36,28 @@ def _create_test_app() -> FastAPI:
     test_app.add_middleware(ErrorHandlerMiddleware)
     test_app.include_router(root_router)
     return test_app
+
+
+@pytest.fixture(scope="session", autouse=True)
+def agent_server() -> None:
+    os.environ["AGENT_SERVER_URL"] = f"http://{AGENT_HOST}:{AGENT_PORT}"
+    os.environ["JWT_SECRET"] = "test-secret-at-least-32-bytes-long"
+    get_settings.cache_clear()
+
+    config = uvicorn.Config(agent_stub_app, host=AGENT_HOST, port=AGENT_PORT, log_level="warning")
+    server = uvicorn.Server(config=config)
+    thread = threading.Thread(target=server.run, daemon=True)
+    thread.start()
+
+    for _ in range(50):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            if sock.connect_ex((AGENT_HOST, AGENT_PORT)) == 0:
+                break
+        time.sleep(0.1)
+
+    yield
+    server.should_exit = True
+    thread.join(timeout=5)
 
 
 @pytest.fixture
