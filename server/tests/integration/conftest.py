@@ -1,0 +1,66 @@
+from __future__ import annotations
+
+from collections.abc import AsyncGenerator
+
+import pytest
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+
+import app.db.models  # noqa: F401 — register all models
+from app.api.deps import db_session as db_session_dep
+from app.api.router import root_router
+from app.core.config import get_settings
+from app.db.base import Base
+from app.middleware.error_handler import ErrorHandlerMiddleware
+from app.middleware.request_logging import RequestLoggingMiddleware
+
+
+def _create_test_app() -> FastAPI:
+    """Create a FastAPI app without lifespan (no shared engine)."""
+    test_app = FastAPI(title="Test")
+    test_app.add_middleware(RequestLoggingMiddleware)
+    test_app.add_middleware(ErrorHandlerMiddleware)
+    test_app.include_router(root_router)
+    return test_app
+
+
+@pytest.fixture
+async def engine():  # type: ignore[no-untyped-def]
+    settings = get_settings()
+    eng = create_async_engine(settings.effective_db_url, echo=False)
+    async with eng.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield eng
+    async with eng.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await eng.dispose()
+
+
+@pytest.fixture
+async def session_factory(engine):  # type: ignore[no-untyped-def]
+    return async_sessionmaker(engine, expire_on_commit=False)
+
+
+@pytest.fixture
+async def db(session_factory):  # type: ignore[no-untyped-def]
+    async with session_factory() as session:
+        yield session
+
+
+@pytest.fixture
+async def client(session_factory):  # type: ignore[no-untyped-def]
+    test_app = _create_test_app()
+
+    async def _override() -> AsyncGenerator[AsyncSession, None]:
+        async with session_factory() as session:
+            yield session
+
+    test_app.dependency_overrides[db_session_dep] = _override
+    transport = ASGITransport(app=test_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
