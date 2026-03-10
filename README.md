@@ -8,7 +8,7 @@ Full-stack scaffold with FastAPI + React + PostgreSQL. All tooling, quality gate
 |-------|-----------|
 | Backend | FastAPI, SQLAlchemy 2.0 (async), Alembic, PostgreSQL 16 |
 | Frontend | React 18, TypeScript, Vite 5, Material-UI v6 |
-| Package Managers | uv (Python), npm (Node) |
+| Package Managers | uv (Python), pnpm (Node) |
 | Quality | Ruff, MyPy (strict), import-linter, ESLint, TypeScript strict |
 | Containers | Docker, Docker Compose |
 | CI | GitHub Actions |
@@ -61,8 +61,8 @@ uv run uvicorn app.main:app --reload --port 8010
 
 # Frontend (separate terminal)
 cd client
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 App runs at http://localhost:5173 with API proxied to :8010.
@@ -81,8 +81,8 @@ uv run pytest tests/integration -q  # Integration tests
 
 Frontend (from `client/`):
 ```bash
-npm run lint    # ESLint
-npm run build   # TypeScript + Vite build
+pnpm run lint   # ESLint
+pnpm run build  # TypeScript + Vite build
 ```
 
 ## API Endpoints

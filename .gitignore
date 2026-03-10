@@ -12,3 +12,5 @@ dist/
 *.egg-info/
 htmlcov/
 .coverage
+
+export_session_md.py

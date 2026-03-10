@@ -1,10 +1,11 @@
 # --- Stage 1: Build frontend ---
 FROM node:20-slim AS frontend-build
 WORKDIR /build
-COPY client/package.json client/package-lock.json ./
-RUN npm ci
+RUN corepack enable
+COPY client/package.json client/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY client/ .
-RUN npm run build
+RUN pnpm run build
 
 # --- Stage 2: Python app ---
 FROM python:3.12-slim AS runtime
