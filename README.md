@@ -1,6 +1,6 @@
-# App Scaffold
+# MetroSense
 
-Full-stack scaffold with FastAPI + React + PostgreSQL. All tooling, quality gates, Docker, and CI/CD pre-configured — zero business logic, ready to build on.
+MetroSense is a chat-first climate and infrastructure intelligence system for Bengaluru, built with FastAPI, React, and PostgreSQL. This repo includes the backend, frontend, and internal agents service plus the tooling and quality gates needed to evolve the product.
 
 ## Tech Stack
 
@@ -53,6 +53,8 @@ Full-stack scaffold with FastAPI + React + PostgreSQL. All tooling, quality gate
 
 ## Quick Start
 
+The agents service is protected by a shared secret header in dev. The backend talks to an agents proxy on port 8020, and that proxy forwards to the ADK server on port 8021. Set the same `AGENT_INTERNAL_TOKEN` in both services so the proxy can validate requests.
+
 ```bash
 # Start PostgreSQL
 docker-compose up -d db
@@ -61,13 +63,20 @@ docker-compose up -d db
 cd server
 uv sync --all-extras
 uv run alembic upgrade head
+export AGENT_INTERNAL_TOKEN=dev-internal-token
 uv run uvicorn app.main:app --reload --port 8010
 
-# Agents (separate terminal)
+# Agents (separate terminals)
 cd agents
 uv sync
 export GOOGLE_API_KEY=your_key
-uv run adk api_server --host 0.0.0.0 --port 8020 .
+export AGENT_INTERNAL_TOKEN=dev-internal-token
+uv run adk api_server --host 0.0.0.0 --port 8021 .
+
+# Agents proxy (separate terminal)
+cd agents
+export AGENT_INTERNAL_TOKEN=dev-internal-token
+uv run uvicorn app.proxy:app --host 0.0.0.0 --port 8020
 
 # Optional: ADK Web UI (separate terminal)
 cd agents
@@ -135,7 +144,7 @@ pnpm run test:e2e
 docker-compose up
 
 # Production (single image)
-docker build -t app-scaffold .
+docker build -t metrosense .
 ```
 
 ## Coding Style

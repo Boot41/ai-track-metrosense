@@ -523,6 +523,7 @@ Add to the scaffold's existing env var pattern:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `AGENT_SERVER_URL` | `http://agents:8020` | Internal Agent Server URL (Docker Compose service name). Used by the backend to call the internal agent service. |
+| `AGENT_INTERNAL_TOKEN` | `change-me` | Shared secret header value sent from backend to agent proxy (`X-Internal-Token`). |
 | `VITE_API_BASE_URL` | *(proxied via Vite → :8010)* | Frontend API base (already handled by Vite proxy in scaffold) |
 
 ---

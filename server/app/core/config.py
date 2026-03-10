@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/app_scaffold"
     agent_server_url: str = "http://agents:8020"
     agent_app_name: str = "metrosearch_agent"
+    agent_internal_token: str = ""
     jwt_secret: str = "change-me"
     jwt_algorithm: str = "HS256"
     jwt_expires_minutes: int = 60

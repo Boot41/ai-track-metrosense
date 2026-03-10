@@ -1,13 +1,13 @@
 # AGENTS.md
 
 ## Project Identity
-- This repository currently contains a working full-stack scaffold: `client/` for React, `server/` for FastAPI, PostgreSQL via Docker Compose, and CI/quality gates.
-- The intended product is `MetroSense`, a chat-based climate and infrastructure intelligence system for Bengaluru.
+- This repository is the working MetroSense codebase: `client/` for React, `server/` for FastAPI, PostgreSQL via Docker Compose, and CI/quality gates.
+- The product is `MetroSense`, a chat-based climate and infrastructure intelligence system for Bengaluru.
 - The target architecture is a three-service system:
   - `client/`: frontend chat application
   - `server/`: public backend API and orchestration layer
   - `agents/`: internal agent server and tool-execution layer
-- Treat the current scaffold as the implementation baseline and evolve it toward this three-service design instead of creating parallel app structures.
+- Treat the current implementation as the baseline and evolve it toward this three-service design instead of creating parallel app structures.
 
 ## Canonical Architecture
 - The intended request flow is:
@@ -94,16 +94,18 @@
   - `pnpm exec playwright install`
   - `pnpm run test:e2e`
 - Local startup today:
+  - The agents service runs behind a lightweight proxy that enforces the `X-Internal-Token` shared secret. The backend calls the proxy on port 8020, and the proxy forwards to the ADK server on port 8021. `/health` stays public for simple availability checks.
   - `docker-compose up -d db`
-  - `cd server && uv run alembic upgrade head && uv run uvicorn app.main:app --reload --port 8010`
-  - `cd agents && uv run adk api_server --host 0.0.0.0 --port 8020 .`
+  - `cd server && export AGENT_INTERNAL_TOKEN=dev-internal-token && uv run alembic upgrade head && uv run uvicorn app.main:app --reload --port 8010`
+  - `cd agents && export AGENT_INTERNAL_TOKEN=dev-internal-token && uv run adk api_server --host 0.0.0.0 --port 8021 .`
+  - `cd agents && export AGENT_INTERNAL_TOKEN=dev-internal-token && uv run uvicorn app.proxy:app --host 0.0.0.0 --port 8020`
   - `cd agents && uv run adk web --port 8001` (optional UI)
   - `cd client && pnpm install && pnpm run dev`
 - When expanding `agents/`, keep startup and validation commands updated in this file.
 
 ## Current Coverage And Next-Step Expectations
-- Current backend tests cover health behavior and auth/password scaffolding.
-- Current integration tests cover health and auth flow scaffolding.
+- Current backend tests cover health behavior and auth/password setup.
+- Current integration tests cover health and auth flow setup.
 - As chat features are added, extend coverage for:
   - backend chat contracts
   - backend-to-agent coordination
@@ -115,4 +117,4 @@
 - Prefer `rg` for search.
 - Do not document or reference unimplemented services as if they already exist.
 - It is acceptable to document `agents/` as planned architecture, but label it clearly as planned until the folder, runtime, and wiring are added.
-- If current scaffold behavior and MetroSense direction diverge, align new work to the MetroSense direction while keeping transitions explicit and incremental.
+- If current behavior and MetroSense direction diverge, align new work to the MetroSense direction while keeping transitions explicit and incremental.
