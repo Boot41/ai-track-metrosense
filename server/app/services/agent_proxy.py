@@ -9,6 +9,13 @@ from app.core.config import Settings
 CHAT_TIMEOUT_SECONDS = 30.0
 
 
+def _auth_headers(settings: Settings) -> dict[str, str]:
+    token = settings.agent_internal_token.strip()
+    if not token:
+        raise ValueError("AGENT_INTERNAL_TOKEN must be set for agent requests")
+    return {"X-Internal-Token": token}
+
+
 def _extract_message_from_events(events: list[dict[str, Any]]) -> str:
     for event in reversed(events):
         content = event.get("content")
@@ -36,9 +43,11 @@ async def _ensure_session(
     app_name: str,
     user_id: str,
     session_id: str,
+    headers: dict[str, str],
 ) -> None:
     response = await client.post(
         f"{base_url}/apps/{app_name}/users/{user_id}/sessions/{session_id}",
+        headers=headers,
         json=None,
     )
     if response.status_code in {200, 201, 204, 409}:
@@ -47,6 +56,7 @@ async def _ensure_session(
 
 
 async def get_chat_response(settings: Settings, session_id: str, message: str) -> dict[str, Any]:
+    headers = _auth_headers(settings)
     async with httpx.AsyncClient(timeout=CHAT_TIMEOUT_SECONDS) as client:
         base_url = settings.agent_server_url.rstrip("/")
         app_name = settings.agent_app_name
@@ -57,9 +67,11 @@ async def get_chat_response(settings: Settings, session_id: str, message: str) -
             app_name=app_name,
             user_id=user_id,
             session_id=session_id,
+            headers=headers,
         )
         response = await client.post(
             f"{base_url}/run",
+            headers=headers,
             json={
                 "appName": app_name,
                 "userId": user_id,
@@ -84,8 +96,12 @@ async def get_chat_response(settings: Settings, session_id: str, message: str) -
 
 
 async def get_agent_health(settings: Settings) -> dict[str, str]:
+    headers = _auth_headers(settings)
     async with httpx.AsyncClient(timeout=5.0) as client:
-        response = await client.get(f"{settings.agent_server_url.rstrip('/')}/health")
+        response = await client.get(
+            f"{settings.agent_server_url.rstrip('/')}/health",
+            headers=headers,
+        )
         response.raise_for_status()
 
     return {"backend": "ok", "agent": "ok", "status": "online"}

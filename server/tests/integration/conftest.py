@@ -41,6 +41,7 @@ def _create_test_app() -> FastAPI:
 @pytest.fixture(scope="session", autouse=True)
 def agent_server() -> None:
     os.environ["AGENT_SERVER_URL"] = f"http://{AGENT_HOST}:{AGENT_PORT}"
+    os.environ["AGENT_INTERNAL_TOKEN"] = "test-internal-token"
     os.environ["JWT_SECRET"] = "test-secret-at-least-32-bytes-long"
     get_settings.cache_clear()
 

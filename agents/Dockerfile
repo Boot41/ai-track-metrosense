@@ -11,4 +11,4 @@ COPY . .
 
 EXPOSE 8020
 
-CMD ["uv", "run", "adk", "api_server", "--host", "0.0.0.0", "--port", "8020", "."]
+CMD ["./scripts/start_agents.sh"]
