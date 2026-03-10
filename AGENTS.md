@@ -58,6 +58,14 @@
 - Treat backend-to-agent communication as an internal interface that may evolve without breaking the UI.
 - Prefer extending existing `server/` and `client/` entrypoints over introducing duplicate service layers or alternative public APIs.
 
+## Authentication
+- Public endpoints:
+  - `POST /api/auth/signup`
+  - `POST /api/auth/login`
+- Protected endpoints:
+  - All other `/api/*` routes require a valid JWT cookie.
+- `/health` remains public for uptime checks.
+
 ## Product Direction
 - MetroSense is intended to be a chat-first application for weather risk, flooding, AQI, outage, traffic, and infrastructure-readiness questions.
 - Expected response modes:
@@ -83,6 +91,8 @@
   - `pnpm install --frozen-lockfile`
   - `pnpm run lint`
   - `pnpm run build`
+  - `pnpm exec playwright install`
+  - `pnpm run test:e2e`
 - Local startup today:
   - `docker-compose up -d db`
   - `cd server && uv run alembic upgrade head && uv run uvicorn app.main:app --reload --port 8010`

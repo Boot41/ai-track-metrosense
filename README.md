@@ -99,11 +99,22 @@ pnpm run lint   # ESLint
 pnpm run build  # TypeScript + Vite build
 ```
 
+Frontend E2E (from `client/`):
+```bash
+pnpm exec playwright install
+pnpm run test:e2e
+```
+
 ## API Endpoints
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/health` | No | Health check |
+| POST | `/api/auth/signup` | No | Create account + set JWT cookie |
+| POST | `/api/auth/login` | No | Login + set JWT cookie |
+| POST | `/api/auth/logout` | Yes | Clear JWT cookie |
+| GET | `/api/auth/me` | Yes | Current user |
+| POST | `/api/chat` | Yes | Chat request |
 
 ## Environment Variables
 
@@ -111,6 +122,11 @@ pnpm run build  # TypeScript + Vite build
 |----------|---------|-------------|
 | `ENV` | `development` | development / test / production |
 | `DATABASE_URL` | `postgresql+asyncpg://postgres:postgres@localhost:5433/app_scaffold` | Database connection |
+| `JWT_SECRET` | `app-scaffold-dev-secret` | JWT signing secret |
+| `JWT_ALGORITHM` | `HS256` | JWT algorithm |
+| `JWT_EXPIRES_MINUTES` | `60` | JWT expiration in minutes |
+| `AUTH_COOKIE_NAME` | `metrosense_token` | Auth cookie name |
+| `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Allowed origins for cookies |
 
 ## Docker
 
