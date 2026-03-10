@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
 import SyncRoundedIcon from "@mui/icons-material/SyncRounded";
-import { Box, ButtonBase, Stack, Typography } from "@mui/material";
+import { Box, Button, ButtonBase, Stack, Typography } from "@mui/material";
 import type { AgentStatus } from "@/types/chat";
+import { useAuth } from "@/auth/AuthContext";
 
 interface HeaderProps {
   agentStatus: AgentStatus;
@@ -53,6 +54,7 @@ function StatusIcon({ status }: { status: AgentStatus }) {
 export default function Header({ agentStatus, sessionId }: HeaderProps) {
   const statusConfig = STATUS_CONFIG[agentStatus];
   const compactSession = useMemo(() => sessionId.slice(0, 8), [sessionId]);
+  const { user, logout } = useAuth();
 
   return (
     <Box
@@ -130,6 +132,16 @@ export default function Header({ agentStatus, sessionId }: HeaderProps) {
               SESSION · {compactSession}
             </Typography>
           </ButtonBase>
+          {user && (
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                {user.email}
+              </Typography>
+              <Button variant="outlined" size="small" onClick={() => void logout()}>
+                Logout
+              </Button>
+            </Stack>
+          )}
         </Stack>
       </Stack>
     </Box>

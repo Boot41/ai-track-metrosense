@@ -6,6 +6,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+import { AuthProvider } from "@/auth/AuthContext";
 import App from "./App";
 import metrosenseTheme from "@/theme/metrosense";
 
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ThemeProvider theme={metrosenseTheme}>
       <CssBaseline />
       <BrowserRouter>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>,
