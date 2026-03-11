@@ -26,6 +26,12 @@ async def test_chat_returns_json_payload(
 ) -> None:
     async def _fake_chat_response(**_: object) -> dict[str, object]:
         return {
+            "session_id": "test-session",
+            "response_mode": "text",
+            "response_text": "Flood risk is elevated tonight.",
+            "citations_summary": [],
+            "data_freshness_summary": {},
+            "follow_up_prompt": None,
             "message": "Flood risk is elevated tonight.",
             "risk_card": {
                 "neighborhood": "SARJAPUR ROAD",
@@ -51,6 +57,12 @@ async def test_chat_returns_json_payload(
 
     assert response.status_code == 200
     assert response.json() == {
+        "session_id": "test-session",
+        "response_mode": "text",
+        "response_text": "Flood risk is elevated tonight.",
+        "citations_summary": [],
+        "data_freshness_summary": {},
+        "follow_up_prompt": None,
         "message": "Flood risk is elevated tonight.",
         "risk_card": {
             "neighborhood": "SARJAPUR ROAD",

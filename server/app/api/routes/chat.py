@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import httpx
 from fastapi import APIRouter, Depends, status
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
@@ -63,9 +63,15 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    message: str
+    session_id: str
+    response_mode: str = "text"
+    response_text: str
+    citations_summary: list[dict[str, object]] = Field(default_factory=list)
+    data_freshness_summary: dict[str, object] = Field(default_factory=dict)
     risk_card: RiskCardPayload | None = None
     artifact: ArtifactPayload | None = None
+    follow_up_prompt: str | None = None
+    message: str  # Backward-compatible alias of response_text
 
 
 class ErrorPayload(BaseModel):

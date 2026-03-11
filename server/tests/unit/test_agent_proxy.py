@@ -83,6 +83,8 @@ async def test_get_chat_response_persists_and_commits(monkeypatch: pytest.Monkey
     )
 
     assert payload["message"] == "Persisted assistant reply"
+    assert payload["response_text"] == "Persisted assistant reply"
+    assert payload["session_id"] == "s-1"
     upsert.assert_awaited_once()
     append.assert_awaited_once()
     db_session.commit.assert_awaited_once()
@@ -113,6 +115,8 @@ async def test_get_chat_response_returns_when_persistence_fails(
     )
 
     assert payload["message"] == "Persisted assistant reply"
+    assert payload["response_text"] == "Persisted assistant reply"
+    assert payload["session_id"] == "s-2"
     upsert.assert_awaited_once()
     append.assert_awaited_once()
     db_session.rollback.assert_awaited_once()

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import json
 from typing import Any
 
 import httpx
@@ -39,6 +40,45 @@ def _extract_message_from_events(events: list[dict[str, Any]]) -> str:
         if texts:
             return "\n".join(texts)
     raise ValueError("Agent response did not include model text")
+
+
+def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
+    default_payload: dict[str, Any] = {
+        "session_id": session_id,
+        "response_mode": "text",
+        "response_text": raw_text,
+        "citations_summary": [],
+        "data_freshness_summary": {},
+        "risk_card": None,
+        "artifact": None,
+        "follow_up_prompt": None,
+        # Backward-compatible field for existing callers.
+        "message": raw_text,
+    }
+
+    try:
+        parsed = json.loads(raw_text)
+    except json.JSONDecodeError:
+        return default_payload
+
+    if not isinstance(parsed, dict):
+        return default_payload
+
+    response_text = parsed.get("response_text")
+    if not isinstance(response_text, str) or not response_text.strip():
+        return default_payload
+
+    return {
+        "session_id": session_id,
+        "response_mode": parsed.get("response_mode", "text"),
+        "response_text": response_text,
+        "citations_summary": parsed.get("citations_summary", []),
+        "data_freshness_summary": parsed.get("data_freshness_summary", {}),
+        "risk_card": parsed.get("risk_card"),
+        "artifact": parsed.get("artifact"),
+        "follow_up_prompt": parsed.get("follow_up_prompt"),
+        "message": response_text,
+    }
 
 
 async def _ensure_session(
@@ -97,6 +137,7 @@ async def get_chat_response(
         raise ValueError("Agent response must be a list of events")
 
     message_text = _extract_message_from_events(events)
+    response_payload = _parse_level2_payload(message_text, session_id=session_id)
     latency_ms = int((time.perf_counter() - started_at) * 1000)
 
     try:
@@ -105,7 +146,7 @@ async def get_chat_response(
             db_session,
             session_id=session_id,
             user_message=message,
-            assistant_message=message_text,
+            assistant_message=response_payload["response_text"],
             agents_invoked=[],
             latency_ms=latency_ms,
         )
@@ -114,11 +155,7 @@ async def get_chat_response(
         await db_session.rollback()
         logger.exception("Failed to persist conversation history for session_id={}", session_id)
 
-    return {
-        "message": message_text,
-        "risk_card": None,
-        "artifact": None,
-    }
+    return response_payload
 
 
 async def get_agent_health(settings: Settings) -> dict[str, str]:
