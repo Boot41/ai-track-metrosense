@@ -1,0 +1,82 @@
+{
+  "eval_set_id": "session_v1",
+  "name": "MetroSense Session V1",
+  "description": "Session continuity and retry-path eval cases for MetroSense.",
+  "eval_cases": [
+    {
+      "eval_id": "history_readback_001",
+      "conversation": [
+        {
+          "invocation_id": "history_readback_001-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "What is the flood risk in Bellandur tonight?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Provide a Bellandur flood-risk summary with a freshness caveat."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "resolve_location",
+                "args": {}
+              },
+              {
+                "name": "get_weather_current",
+                "args": {}
+              },
+              {
+                "name": "get_flood_incidents",
+                "args": {}
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1773258412.8172314
+        },
+        {
+          "invocation_id": "history_readback_001-turn-2",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "What was the main reason you said that?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Explain the earlier flood-risk answer by referencing rainfall, incidents, or thresholds mentioned in the prior turn."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1773258412.8172338
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1773258412.817242
+    }
+  ],
+  "creation_timestamp": 1773258412.8172436
+}

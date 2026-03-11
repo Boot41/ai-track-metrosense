@@ -1,0 +1,104 @@
+{
+  "criteria": {
+    "tool_trajectory_avg_score": {
+      "threshold": 0.7,
+      "matchType": "IN_ORDER"
+    },
+    "final_response_match_v2": {
+      "threshold": 0.75,
+      "judgeModelOptions": {
+        "judgeModel": "gemini-2.5-flash",
+        "numSamples": 3
+      }
+    },
+    "rubric_based_final_response_quality_v1": {
+      "threshold": 0.75,
+      "judgeModelOptions": {
+        "judgeModel": "gemini-2.5-flash",
+        "numSamples": 3
+      },
+      "rubrics": [
+        {
+          "rubric_id": "final_response_quality_1",
+          "rubric_content": {
+            "text_property": "The response answers the user's actual question directly instead of giving generic filler."
+          },
+          "type": "FINAL_RESPONSE_QUALITY"
+        },
+        {
+          "rubric_id": "final_response_quality_2",
+          "rubric_content": {
+            "text_property": "The response stays within Bengaluru climate and infrastructure scope."
+          },
+          "type": "FINAL_RESPONSE_QUALITY"
+        },
+        {
+          "rubric_id": "final_response_quality_3",
+          "rubric_content": {
+            "text_property": "The response includes a freshness caveat grounded in metadata when data is used."
+          },
+          "type": "FINAL_RESPONSE_QUALITY"
+        },
+        {
+          "rubric_id": "final_response_quality_4",
+          "rubric_content": {
+            "text_property": "The response is specific, actionable, and faithful to the underlying data and documents."
+          },
+          "type": "FINAL_RESPONSE_QUALITY"
+        }
+      ]
+    },
+    "rubric_based_tool_use_quality_v1": {
+      "threshold": 0.7,
+      "judgeModelOptions": {
+        "judgeModel": "gemini-2.5-flash",
+        "numSamples": 3
+      },
+      "rubrics": [
+        {
+          "rubric_id": "tool_use_quality_1",
+          "rubric_content": {
+            "text_property": "The agent chooses tools that match the user's domain and question type."
+          },
+          "type": "TOOL_USE_QUALITY"
+        },
+        {
+          "rubric_id": "tool_use_quality_2",
+          "rubric_content": {
+            "text_property": "The agent uses document tools for predictive questions that require thresholds or heuristics."
+          },
+          "type": "TOOL_USE_QUALITY"
+        },
+        {
+          "rubric_id": "tool_use_quality_3",
+          "rubric_content": {
+            "text_property": "The agent avoids unnecessary tool calls when a direct lookup is sufficient."
+          },
+          "type": "TOOL_USE_QUALITY"
+        },
+        {
+          "rubric_id": "tool_use_quality_4",
+          "rubric_content": {
+            "text_property": "The final answer reflects the important information returned by the selected tools."
+          },
+          "type": "TOOL_USE_QUALITY"
+        }
+      ]
+    },
+    "hallucinations_v1": {
+      "threshold": 0.85,
+      "judgeModelOptions": {
+        "judgeModel": "gemini-2.5-flash",
+        "numSamples": 3
+      },
+      "evaluateIntermediateNlResponses": true
+    },
+    "safety_v1": {
+      "threshold": 1.0,
+      "judgeModelOptions": {
+        "judgeModel": "gemini-2.5-flash",
+        "numSamples": 3
+      }
+    }
+  }
+}

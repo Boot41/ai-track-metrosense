@@ -1,0 +1,18 @@
+{
+  "public_session_id": "s-overflow",
+  "backend_trace": {
+    "retry_reason": "input_token_limit",
+    "retry_session_id": "s-overflow--retry-1739999999999"
+  },
+  "response_payload": {
+    "session_id": "s-overflow",
+    "response_mode": "text",
+    "response_text": "Reply after overflow reset.",
+    "citations_summary": [],
+    "data_freshness_summary": {"note": "Fixture replay for token overflow retry."},
+    "risk_card": null,
+    "artifact": null,
+    "follow_up_prompt": null,
+    "message": "Reply after overflow reset."
+  }
+}

@@ -1,0 +1,343 @@
+{
+  "$defs": {
+    "AdkEvalSpec": {
+      "properties": {
+        "criteria_profile": {
+          "default": "default",
+          "enum": [
+            "default",
+            "guardrail",
+            "session"
+          ],
+          "title": "Criteria Profile",
+          "type": "string"
+        },
+        "thresholds": {
+          "$ref": "#/$defs/JudgeThresholds"
+        }
+      },
+      "title": "AdkEvalSpec",
+      "type": "object"
+    },
+    "BackendAssertions": {
+      "properties": {
+        "expect_json_schema_valid": {
+          "default": true,
+          "title": "Expect Json Schema Valid",
+          "type": "boolean"
+        },
+        "expect_no_live_claim": {
+          "default": true,
+          "title": "Expect No Live Claim",
+          "type": "boolean"
+        },
+        "expect_history_persisted": {
+          "default": false,
+          "title": "Expect History Persisted",
+          "type": "boolean"
+        },
+        "expect_same_public_session_id": {
+          "default": false,
+          "title": "Expect Same Public Session Id",
+          "type": "boolean"
+        },
+        "expect_retry_session_suffix_used": {
+          "default": false,
+          "title": "Expect Retry Session Suffix Used",
+          "type": "boolean"
+        }
+      },
+      "title": "BackendAssertions",
+      "type": "object"
+    },
+    "CaseOutcome": {
+      "properties": {
+        "expected_domains": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expected Domains",
+          "type": "array"
+        },
+        "expected_citations_contains": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expected Citations Contains",
+          "type": "array"
+        },
+        "expected_freshness_keys": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expected Freshness Keys",
+          "type": "array"
+        },
+        "expected_follow_up_prompt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Follow Up Prompt"
+        },
+        "allowed_error_codes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Error Codes",
+          "type": "array"
+        }
+      },
+      "title": "CaseOutcome",
+      "type": "object"
+    },
+    "ConversationTurnSpec": {
+      "properties": {
+        "user_message": {
+          "title": "User Message",
+          "type": "string"
+        },
+        "session_action": {
+          "default": "continue",
+          "enum": [
+            "new",
+            "continue",
+            "force_overflow_fixture"
+          ],
+          "title": "Session Action",
+          "type": "string"
+        },
+        "fixture_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fixture Name"
+        },
+        "expectation": {
+          "$ref": "#/$defs/TurnExpectation"
+        }
+      },
+      "required": [
+        "user_message"
+      ],
+      "title": "ConversationTurnSpec",
+      "type": "object"
+    },
+    "DefaultSessionInput": {
+      "properties": {
+        "app_name": {
+          "default": "metrosense_agent",
+          "title": "App Name",
+          "type": "string"
+        },
+        "user_id": {
+          "default": "metrosense-eval-user",
+          "title": "User Id",
+          "type": "string"
+        },
+        "state": {
+          "additionalProperties": true,
+          "title": "State",
+          "type": "object"
+        }
+      },
+      "title": "DefaultSessionInput",
+      "type": "object"
+    },
+    "JudgeThresholds": {
+      "properties": {
+        "final_response_match_v2": {
+          "default": 0.8,
+          "title": "Final Response Match V2",
+          "type": "number"
+        },
+        "rubric_based_final_response_quality_v1": {
+          "default": 0.8,
+          "title": "Rubric Based Final Response Quality V1",
+          "type": "number"
+        },
+        "tool_trajectory_avg_score": {
+          "default": 0.7,
+          "title": "Tool Trajectory Avg Score",
+          "type": "number"
+        },
+        "rubric_based_tool_use_quality_v1": {
+          "default": 0.7,
+          "title": "Rubric Based Tool Use Quality V1",
+          "type": "number"
+        },
+        "hallucinations_v1": {
+          "default": 0.85,
+          "title": "Hallucinations V1",
+          "type": "number"
+        },
+        "safety_v1": {
+          "default": 1.0,
+          "title": "Safety V1",
+          "type": "number"
+        }
+      },
+      "title": "JudgeThresholds",
+      "type": "object"
+    },
+    "MetroSenseEvalCase": {
+      "properties": {
+        "case_id": {
+          "title": "Case Id",
+          "type": "string"
+        },
+        "suite": {
+          "enum": [
+            "direct_lookup",
+            "historical",
+            "predictive",
+            "guardrails",
+            "scorecard",
+            "session"
+          ],
+          "title": "Suite",
+          "type": "string"
+        },
+        "tier_targets": {
+          "items": {
+            "enum": [
+              "agent_only",
+              "backend_e2e"
+            ],
+            "type": "string"
+          },
+          "title": "Tier Targets",
+          "type": "array"
+        },
+        "conversation": {
+          "items": {
+            "$ref": "#/$defs/ConversationTurnSpec"
+          },
+          "title": "Conversation",
+          "type": "array"
+        },
+        "expected": {
+          "$ref": "#/$defs/CaseOutcome"
+        },
+        "adk_eval": {
+          "$ref": "#/$defs/AdkEvalSpec"
+        },
+        "backend_assertions": {
+          "$ref": "#/$defs/BackendAssertions"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        }
+      },
+      "required": [
+        "case_id",
+        "suite",
+        "tier_targets",
+        "conversation"
+      ],
+      "title": "MetroSenseEvalCase",
+      "type": "object"
+    },
+    "TurnExpectation": {
+      "properties": {
+        "reference_response": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference Response"
+        },
+        "must_include": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Must Include",
+          "type": "array"
+        },
+        "must_not_include": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Must Not Include",
+          "type": "array"
+        },
+        "expected_tools": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expected Tools",
+          "type": "array"
+        },
+        "expected_response_mode": {
+          "default": "text",
+          "title": "Expected Response Mode",
+          "type": "string"
+        },
+        "requires_risk_card": {
+          "default": false,
+          "title": "Requires Risk Card",
+          "type": "boolean"
+        },
+        "requires_artifact": {
+          "default": false,
+          "title": "Requires Artifact",
+          "type": "boolean"
+        }
+      },
+      "title": "TurnExpectation",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "catalog_id": {
+      "title": "Catalog Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "default_session_input": {
+      "$ref": "#/$defs/DefaultSessionInput"
+    },
+    "cases": {
+      "items": {
+        "$ref": "#/$defs/MetroSenseEvalCase"
+      },
+      "title": "Cases",
+      "type": "array"
+    }
+  },
+  "required": [
+    "catalog_id",
+    "name",
+    "description",
+    "cases"
+  ],
+  "title": "MetroSenseEvalCatalog",
+  "type": "object"
+}
