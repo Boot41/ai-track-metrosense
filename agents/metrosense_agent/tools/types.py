@@ -19,6 +19,11 @@ class ToolMeta(TypedDict):
     source: Literal["backend", "filesystem"]
     error_code: ErrorCode | None
     error_detail: str | None
+    # Always present on successful backend responses.
+    # Format: "MetroSense 2023 dataset. Most recent record: <observed_at>."
+    # Agents MUST copy this verbatim into data_freshness and prefix responses
+    # with it so users know the data is historical, not live.
+    dataset_note: str | None
 
 
 class ToolResult(TypedDict):
@@ -26,7 +31,11 @@ class ToolResult(TypedDict):
     meta: ToolMeta
 
 
-def success_result(data: Any, source: Literal["backend", "filesystem"]) -> ToolResult:
+def success_result(
+    data: Any,
+    source: Literal["backend", "filesystem"],
+    dataset_note: str | None = None,
+) -> ToolResult:
     return {
         "data": data,
         "meta": {
@@ -34,6 +43,7 @@ def success_result(data: Any, source: Literal["backend", "filesystem"]) -> ToolR
             "source": source,
             "error_code": None,
             "error_detail": None,
+            "dataset_note": dataset_note,
         },
     }
 
@@ -51,5 +61,6 @@ def failure_result(
             "source": source,
             "error_code": error_code,
             "error_detail": error_detail,
+            "dataset_note": None,
         },
     }

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import time
 import json
+import re
+import time
 from typing import Any
 
 import httpx
@@ -11,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import Settings
 from app.services import conversation_service
 
-CHAT_TIMEOUT_SECONDS = 30.0
+CHAT_TIMEOUT_SECONDS = 600.0
 
 
 def _auth_headers(settings: Settings) -> dict[str, str]:
@@ -33,13 +34,53 @@ def _extract_message_from_events(events: list[dict[str, Any]]) -> str:
         if not isinstance(parts, list):
             continue
         texts = [
-            part.get("text")
+            t
             for part in parts
-            if isinstance(part, dict) and isinstance(part.get("text"), str)
+            if isinstance(part, dict) and isinstance((t := part.get("text")), str)
         ]
         if texts:
             return "\n".join(texts)
     raise ValueError("Agent response did not include model text")
+
+
+_FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)```", re.DOTALL)
+
+
+def _strip_fences(text: str) -> str:
+    """Return the content inside the first markdown code fence, or the original text."""
+    match = _FENCE_RE.search(text)
+    if match:
+        return match.group(1).strip()
+    return text
+
+
+def _synthesize_from_level1(parsed: dict[str, Any]) -> str | None:
+    """
+    Try to build a human-readable response_text from a Level-1 agent payload
+    (fields: agent, status, confidence, data, errors, citations, …).
+    Returns None when nothing useful can be extracted.
+    """
+    errors: list[Any] = parsed.get("errors") or []
+    status: str = str(parsed.get("status", ""))
+    data = parsed.get("data")
+
+    if errors:
+        readable = "; ".join(str(e) for e in errors if e)
+        if readable:
+            return readable
+
+    if isinstance(data, dict):
+        parts = [f"{k}: {v}" for k, v in data.items() if v is not None]
+        if parts:
+            return ". ".join(parts)
+    elif isinstance(data, list) and data:
+        return str(data[0])
+
+    agent_name: str = str(parsed.get("agent", "agent"))
+    if status:
+        return f"{agent_name} returned status: {status}"
+
+    return None
 
 
 def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
@@ -56,29 +97,50 @@ def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
         "message": raw_text,
     }
 
+    # Strip markdown code fences that LLMs sometimes emit around JSON output.
+    json_candidate = _strip_fences(raw_text)
+
     try:
-        parsed = json.loads(raw_text)
+        parsed = json.loads(json_candidate)
     except json.JSONDecodeError:
         return default_payload
 
     if not isinstance(parsed, dict):
         return default_payload
 
+    # --- Level-2 shape: has response_text directly ---
     response_text = parsed.get("response_text")
-    if not isinstance(response_text, str) or not response_text.strip():
-        return default_payload
+    if isinstance(response_text, str) and response_text.strip():
+        return {
+            "session_id": session_id,
+            "response_mode": parsed.get("response_mode", "text"),
+            "response_text": response_text,
+            "citations_summary": parsed.get("citations_summary", []),
+            "data_freshness_summary": parsed.get("data_freshness_summary", {}),
+            "risk_card": parsed.get("risk_card"),
+            "artifact": parsed.get("artifact"),
+            "follow_up_prompt": parsed.get("follow_up_prompt"),
+            "message": response_text,
+        }
 
-    return {
-        "session_id": session_id,
-        "response_mode": parsed.get("response_mode", "text"),
-        "response_text": response_text,
-        "citations_summary": parsed.get("citations_summary", []),
-        "data_freshness_summary": parsed.get("data_freshness_summary", {}),
-        "risk_card": parsed.get("risk_card"),
-        "artifact": parsed.get("artifact"),
-        "follow_up_prompt": parsed.get("follow_up_prompt"),
-        "message": response_text,
-    }
+    # --- Level-1 shape: agent/status/data/errors/confidence ---
+    level1_keys = {"agent", "status", "data", "errors", "confidence", "query_id"}
+    if level1_keys & parsed.keys():
+        synthesized = _synthesize_from_level1(parsed)
+        if synthesized:
+            return {
+                "session_id": session_id,
+                "response_mode": "text",
+                "response_text": synthesized,
+                "citations_summary": parsed.get("citations", []),
+                "data_freshness_summary": parsed.get("data_freshness", {}),
+                "risk_card": None,
+                "artifact": None,
+                "follow_up_prompt": None,
+                "message": synthesized,
+            }
+
+    return default_payload
 
 
 async def _ensure_session(

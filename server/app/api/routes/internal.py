@@ -42,7 +42,7 @@ async def weather_current(
 )
 async def weather_historical(
     location_id: str,
-    hours: int = Query(default=24, ge=1, le=720),
+    hours: int = Query(default=720, ge=1, le=8760),
     session: AsyncSession = Depends(db_session),
 ) -> list[dict[str, Any]]:
     return await data_service.get_weather_historical(session, location_id=location_id, hours=hours)
@@ -66,7 +66,7 @@ async def aqi_current(
 )
 async def aqi_historical(
     location_id: str,
-    days: int = Query(default=7, ge=1, le=365),
+    days: int = Query(default=365, ge=1, le=3650),
     session: AsyncSession = Depends(db_session),
 ) -> list[dict[str, Any]]:
     return await data_service.get_aqi_historical(session, location_id=location_id, days=days)
@@ -102,7 +102,7 @@ async def floods(
 )
 async def outages(
     location_id: str,
-    window_days: int = Query(default=30, ge=1, le=365),
+    window_days: int = Query(default=365, ge=1, le=3650),
     session: AsyncSession = Depends(db_session),
 ) -> list[dict[str, Any]]:
     return await data_service.get_power_outages(

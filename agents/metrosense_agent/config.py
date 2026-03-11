@@ -4,6 +4,10 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 
+from dotenv import load_dotenv
+
+load_dotenv()  # loads agents/.env when running via `adk api_server`
+
 
 @dataclass(frozen=True)
 class AgentSettings:
