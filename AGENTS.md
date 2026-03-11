@@ -6,8 +6,9 @@
 - The target architecture is a three-service system:
   - `client/`: frontend chat application
   - `server/`: public backend API and orchestration layer
-  - `agents/`: internal agent server and tool-execution layer
+  - `agents/`: internal agent server and tool-execution layer (✅ **exists and wired**, current status: skeleton with google_search tool only)
 - Treat the current implementation as the baseline and evolve it toward this three-service design instead of creating parallel app structures.
+- **Status**: ~40% complete. Auth flow, backend-to-agent routing, and database schema are functional. Data seeding, custom agent tools, risk cards/artifacts, streaming, and message persistence are planned.
 
 ## Canonical Architecture
 - The intended request flow is:
@@ -104,17 +105,38 @@
 - When expanding `agents/`, keep startup and validation commands updated in this file.
 
 ## Current Coverage And Next-Step Expectations
-- Current backend tests cover health behavior and auth/password setup.
-- Current integration tests cover health and auth flow setup.
-- As chat features are added, extend coverage for:
-  - backend chat contracts
-  - backend-to-agent coordination
-  - agent response parsing/transport
-  - frontend rendering of streamed text, `RiskCard`, and `Artifact` payloads
+
+### Implemented (✅)
+- **Backend:** Auth flow (signup/login/logout/me with JWT + httponly cookies), health checks, database schema (9+ models for weather/AQI/flooding/outages/traffic), `/api/chat` endpoint
+- **Backend-to-Agent:** Proxy service with `X-Internal-Token` validation, session routing to ADK
+- **Frontend:** Chat UI (MessageBubble, MessageList, InputBar), auth context (login/signup/logout), RiskCard and ArtifactRenderer components, health polling
+- **Tests:** Auth flow (signup/login/logout), password hashing, health checks, basic chat endpoint
+
+### Planned (📋)
+- **Agent Tools:** Custom tools for flood-risk assessment, AQI lookup, outage status, traffic conditions, document retrieval
+- **Data Seeding:** Load CSV data (DataSet_MetroSense/) and documents (Documents_Metrosense/) into database
+- **Structured Responses:** Risk cards and artifacts emitted by agent layer; backend extracts and shapes for frontend
+- **Streaming:** Server-sent events (SSE) or WebSocket for streamed text responses
+- **Message Persistence:** Store chat history in database; load conversation context for agents
+- **Chat Response Tests:** Extend coverage for agent output parsing, risk card generation, artifact rendering
+
+### Current Test Coverage
+- Backend: Health, auth (signup/login/logout/me), password hashing, basic chat routing
+- Frontend: Component renders (no E2E tests written yet)
+- Agents: smoke_test.py validates proxy routing only (not domain logic)
+
+### Next Steps (Recommended Order)
+1. Implement data loader to seed MetroSense CSVs and documents
+2. Add custom agent tools (flood-risk, aqi-lookup, outage-status, traffic)
+3. Implement structured response generation (risk cards/artifacts from agent)
+4. Add message history persistence and context retrieval
+5. Implement streaming responses (SSE or WebSocket)
+6. Extend test coverage for full end-to-end flows
 
 ## Agent Guidance
 - Before major implementation work, verify repo truth from `README.md`, `server/pyproject.toml`, `client/package.json`, and `docs/FRONTEND_SPEC.md`.
 - Prefer `rg` for search.
 - Do not document or reference unimplemented services as if they already exist.
-- It is acceptable to document `agents/` as planned architecture, but label it clearly as planned until the folder, runtime, and wiring are added.
+- **Important:** The CSV data files (DataSet_MetroSense/) and documents (Documents_Metrosense/) exist in the repo but are **not yet loaded** into the database. Implement a data loader before building agent tools that depend on MetroSense domain knowledge.
+- The agent service skeleton runs and routes to google_search tool, but custom domain tools (flood-risk, aqi, outage, traffic) do not yet exist. Add tools incrementally as matching backend data becomes available.
 - If current behavior and MetroSense direction diverge, align new work to the MetroSense direction while keeping transitions explicit and incremental.
