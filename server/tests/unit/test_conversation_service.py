@@ -12,7 +12,13 @@ from app.services import conversation_service
 async def test_upsert_session_executes_statement() -> None:
     session = AsyncMock()
 
-    await conversation_service.upsert_session(session, session_id="s-1", user_role="user")
+    await conversation_service.upsert_session(
+        session,
+        session_id="s-1",
+        user_id=1,
+        title="Test title",
+        user_role="user",
+    )
 
     session.execute.assert_awaited_once()
 

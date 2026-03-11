@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
@@ -79,7 +79,10 @@ class _OverflowThenSuccessClient:
             payload = {
                 "error": {
                     "code": 400,
-                    "message": "The input token count exceeds the maximum number of tokens allowed (1048576).",
+                    "message": (
+                        "The input token count exceeds the maximum number of tokens "
+                        "allowed (1048576)."
+                    ),
                     "status": "INVALID_ARGUMENT",
                 }
             }
@@ -107,16 +110,24 @@ async def test_get_chat_response_persists_and_commits(monkeypatch: pytest.Monkey
         agent_server_url="http://agent.local",
     )
     db_session = AsyncMock()
+    db_session.add = MagicMock()
     upsert = AsyncMock()
     append = AsyncMock(return_value="turn-id")
 
     monkeypatch.setattr(agent_proxy.httpx, "AsyncClient", _FakeAsyncClient)
+    monkeypatch.setattr(
+        agent_proxy.conversation_service, "session_owner_id", AsyncMock(return_value=None)
+    )
+    monkeypatch.setattr(
+        agent_proxy.conversation_service, "derive_session_title", lambda _: "Hello title"
+    )
     monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", upsert)
     monkeypatch.setattr(agent_proxy.conversation_service, "append_turn", append)
 
     payload = await agent_proxy.get_chat_response(
         settings=settings,
         db_session=db_session,
+        user_id=1,
         session_id="s-1",
         message="hello",
     )
@@ -139,16 +150,24 @@ async def test_get_chat_response_returns_when_persistence_fails(
         agent_server_url="http://agent.local",
     )
     db_session = AsyncMock()
+    db_session.add = MagicMock()
     upsert = AsyncMock()
     append = AsyncMock(side_effect=RuntimeError("db write failure"))
 
     monkeypatch.setattr(agent_proxy.httpx, "AsyncClient", _FakeAsyncClient)
+    monkeypatch.setattr(
+        agent_proxy.conversation_service, "session_owner_id", AsyncMock(return_value=None)
+    )
+    monkeypatch.setattr(
+        agent_proxy.conversation_service, "derive_session_title", lambda _: "Hello title"
+    )
     monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", upsert)
     monkeypatch.setattr(agent_proxy.conversation_service, "append_turn", append)
 
     payload = await agent_proxy.get_chat_response(
         settings=settings,
         db_session=db_session,
+        user_id=1,
         session_id="s-2",
         message="hello",
     )
@@ -171,16 +190,24 @@ async def test_get_chat_response_retries_once_on_input_token_limit(
         agent_server_url="http://agent.local",
     )
     db_session = AsyncMock()
+    db_session.add = MagicMock()
     upsert = AsyncMock()
     append = AsyncMock(return_value="turn-id")
 
     monkeypatch.setattr(agent_proxy.httpx, "AsyncClient", _OverflowThenSuccessClient)
+    monkeypatch.setattr(
+        agent_proxy.conversation_service, "session_owner_id", AsyncMock(return_value=None)
+    )
+    monkeypatch.setattr(
+        agent_proxy.conversation_service, "derive_session_title", lambda _: "Hello title"
+    )
     monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", upsert)
     monkeypatch.setattr(agent_proxy.conversation_service, "append_turn", append)
 
     payload = await agent_proxy.get_chat_response(
         settings=settings,
         db_session=db_session,
+        user_id=1,
         session_id="s-overflow",
         message="hello",
     )

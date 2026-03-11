@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AxiosError } from "axios";
-import { getHealth, postChat } from "@/lib/api";
-import type { AgentStatus, AppError, ArtifactPayload, Message, RiskCardPayload } from "@/types/chat";
+import { getChatSession, getChatSessions, getHealth, postChat } from "@/lib/api";
+import type {
+  AgentStatus,
+  AppError,
+  ArtifactPayload,
+  ChatSessionSummary,
+  ChatTranscriptMessage,
+  Message,
+  RiskCardPayload,
+} from "@/types/chat";
 
 const HEALTH_POLL_MS = 30_000;
 const PROMPTS = [
@@ -42,21 +50,40 @@ function extractError(error: unknown): AppError {
 export interface UseChatResult {
   agentStatus: AgentStatus;
   error: AppError | null;
+  isHistoryLoading: boolean;
   input: string;
   isSending: boolean;
+  mode: "live" | "history_readonly";
   messages: Message[];
   prompts: string[];
+  selectedHistorySessionId: string | null;
   sessionId: string;
+  sessions: ChatSessionSummary[];
+  createNewChat: () => void;
+  loadHistorySession: (sessionId: string) => Promise<void>;
   setInput: (value: string) => void;
   sendMessage: (value?: string) => Promise<void>;
+}
+
+function fromTranscriptMessage(message: ChatTranscriptMessage): Message {
+  return {
+    id: `${message.timestamp}-${Math.random().toString(16).slice(2)}`,
+    role: message.role,
+    content: message.message,
+    timestamp: new Date(message.timestamp),
+  };
 }
 
 export function useChat(): UseChatResult {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [agentStatus, setAgentStatus] = useState<AgentStatus>("connecting");
   const [error, setError] = useState<AppError | null>(null);
+  const [sessions, setSessions] = useState<ChatSessionSummary[]>([]);
+  const [mode, setMode] = useState<"live" | "history_readonly">("live");
+  const [selectedHistorySessionId, setSelectedHistorySessionId] = useState<string | null>(null);
   const sessionIdRef = useRef<string>(createSessionId());
 
   const refreshHealth = useCallback(async () => {
@@ -76,10 +103,47 @@ export function useChat(): UseChatResult {
     return () => window.clearInterval(interval);
   }, [refreshHealth]);
 
+  const refreshSessions = useCallback(async () => {
+    try {
+      const response = await getChatSessions();
+      setSessions(response.sessions);
+    } catch {
+      // Keep chat usable if history fetch fails.
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshSessions();
+  }, [refreshSessions]);
+
+  const createNewChat = useCallback(() => {
+    setMode("live");
+    setSelectedHistorySessionId(null);
+    sessionIdRef.current = createSessionId();
+    setMessages([]);
+    setInput("");
+    setError(null);
+  }, []);
+
+  const loadHistorySession = useCallback(async (sessionId: string) => {
+    setError(null);
+    setIsHistoryLoading(true);
+    try {
+      const transcript = await getChatSession(sessionId);
+      setMessages(transcript.messages.map(fromTranscriptMessage));
+      setMode("history_readonly");
+      setSelectedHistorySessionId(transcript.session_id);
+    } catch (caughtError) {
+      setError(extractError(caughtError));
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  }, []);
+
   const sendMessage = useCallback(
     async (value?: string) => {
       const messageText = (value ?? input).trim();
-      if (!messageText || isSending) {
+      if (mode !== "live" || !messageText || isSending) {
         return;
       }
 
@@ -107,6 +171,7 @@ export function useChat(): UseChatResult {
         });
 
         setMessages((current) => [...current, assistantMessage]);
+        await refreshSessions();
       } catch (caughtError) {
         const appError = extractError(caughtError);
         setError(appError);
@@ -123,22 +188,41 @@ export function useChat(): UseChatResult {
         void refreshHealth();
       }
     },
-    [input, isSending, refreshHealth],
+    [input, isSending, mode, refreshHealth, refreshSessions],
   );
 
   return useMemo(
     () => ({
       agentStatus,
+      createNewChat,
       error,
+      isHistoryLoading,
       input,
       isSending,
+      loadHistorySession,
+      mode,
       messages,
       prompts: PROMPTS,
+      selectedHistorySessionId,
       sessionId: sessionIdRef.current,
+      sessions,
       setInput,
       sendMessage,
     }),
-    [agentStatus, error, input, isSending, messages, sendMessage],
+    [
+      agentStatus,
+      createNewChat,
+      error,
+      isHistoryLoading,
+      input,
+      isSending,
+      loadHistorySession,
+      mode,
+      messages,
+      selectedHistorySessionId,
+      sessions,
+      sendMessage,
+    ],
   );
 }
 

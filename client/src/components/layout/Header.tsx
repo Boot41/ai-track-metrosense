@@ -1,14 +1,16 @@
 import { useMemo } from "react";
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
 import SyncRoundedIcon from "@mui/icons-material/SyncRounded";
-import { Box, Button, ButtonBase, Stack, Typography } from "@mui/material";
+import { Box, Button, ButtonBase, IconButton, Stack, Typography } from "@mui/material";
 import type { AgentStatus } from "@/types/chat";
 import { useAuth } from "@/auth/AuthContext";
 
 interface HeaderProps {
   agentStatus: AgentStatus;
   sessionId: string;
+  onOpenSidebar?: () => void;
 }
 
 const STATUS_CONFIG: Record<AgentStatus, { bg: string; border: string; color: string; label: string }> = {
@@ -51,7 +53,7 @@ function StatusIcon({ status }: { status: AgentStatus }) {
   );
 }
 
-export default function Header({ agentStatus, sessionId }: HeaderProps) {
+export default function Header({ agentStatus, sessionId, onOpenSidebar }: HeaderProps) {
   const statusConfig = STATUS_CONFIG[agentStatus];
   const compactSession = useMemo(() => sessionId.slice(0, 8), [sessionId]);
   const { user, logout } = useAuth();
@@ -76,7 +78,17 @@ export default function Header({ agentStatus, sessionId }: HeaderProps) {
         justifyContent="space-between"
         sx={{ px: { xs: 2, md: 4 }, py: 2 }}
       >
-        <Box>
+        <Stack direction="row" spacing={1} alignItems="center">
+          {onOpenSidebar ? (
+            <IconButton
+              aria-label="Open chat history"
+              onClick={onOpenSidebar}
+              sx={{ display: { xs: "inline-flex", md: "none" } }}
+            >
+              <MenuRoundedIcon />
+            </IconButton>
+          ) : null}
+          <Box>
           <Typography variant="h5" fontWeight={700} letterSpacing="0.08em">
             METROSENSE
           </Typography>
@@ -90,7 +102,8 @@ export default function Header({ agentStatus, sessionId }: HeaderProps) {
           >
             BENGALURU CLIMATE INTELLIGENCE
           </Typography>
-        </Box>
+          </Box>
+        </Stack>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ xs: "stretch", sm: "center" }}>
           <Stack

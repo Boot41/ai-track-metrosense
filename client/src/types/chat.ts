@@ -60,6 +60,30 @@ export interface ChatRequest {
   message: string;
 }
 
+export interface ChatSessionSummary {
+  session_id: string;
+  title: string;
+  last_active_at: string;
+  total_turns: number;
+}
+
+export interface ChatSessionsResponse {
+  sessions: ChatSessionSummary[];
+}
+
+export interface ChatTranscriptMessage {
+  role: "user" | "assistant";
+  message: string;
+  timestamp: string;
+}
+
+export interface ChatTranscriptResponse {
+  session_id: string;
+  title: string;
+  last_active_at: string;
+  messages: ChatTranscriptMessage[];
+}
+
 export interface HealthResponse {
   backend: "ok" | "down";
   agent: "ok" | "down";

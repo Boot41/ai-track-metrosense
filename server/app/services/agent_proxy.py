@@ -224,21 +224,26 @@ async def _run_agent_once(
 async def get_chat_response(
     settings: Settings,
     db_session: AsyncSession,
+    user_id: int,
     session_id: str,
     message: str,
 ) -> dict[str, Any]:
     started_at = time.perf_counter()
+    owner_id = await conversation_service.session_owner_id(db_session, session_id=session_id)
+    if owner_id is not None and owner_id != user_id:
+        raise PermissionError("Session does not belong to current user")
+
     headers = _auth_headers(settings)
     async with httpx.AsyncClient(timeout=CHAT_TIMEOUT_SECONDS) as client:
         base_url = settings.agent_server_url.rstrip("/")
         app_name = settings.agent_app_name
-        user_id = "metrosense"
+        adk_user_id = "metrosense"
         try:
             events = await _run_agent_once(
                 client=client,
                 base_url=base_url,
                 app_name=app_name,
-                user_id=user_id,
+                user_id=adk_user_id,
                 session_id=session_id,
                 message=message,
                 headers=headers,
@@ -248,7 +253,10 @@ async def get_chat_response(
                 raise
             retry_session_id = _overflow_retry_session_id(session_id)
             logger.warning(
-                "Agent token limit exceeded for session_id={}; retrying once with adk_session_id={}",
+                (
+                    "Agent token limit exceeded for session_id={}; "
+                    "retrying once with adk_session_id={}"
+                ),
                 session_id,
                 retry_session_id,
             )
@@ -256,7 +264,7 @@ async def get_chat_response(
                 client=client,
                 base_url=base_url,
                 app_name=app_name,
-                user_id=user_id,
+                user_id=adk_user_id,
                 session_id=retry_session_id,
                 message=message,
                 headers=headers,
@@ -267,7 +275,12 @@ async def get_chat_response(
     latency_ms = int((time.perf_counter() - started_at) * 1000)
 
     try:
-        await conversation_service.upsert_session(db_session, session_id=session_id)
+        await conversation_service.upsert_session(
+            db_session,
+            session_id=session_id,
+            user_id=user_id,
+            title=conversation_service.derive_session_title(message),
+        )
         assistant_turn_id = await conversation_service.append_turn(
             db_session,
             session_id=session_id,

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import pytest
 from httpx import AsyncClient
 
 from app.api.deps import require_user
 from app.db.models import User
 from app.main import app
-from app.services import agent_proxy
+from app.services import agent_proxy, conversation_service
 
 
 @pytest.fixture
@@ -126,3 +128,82 @@ async def test_api_health_degraded_when_agent_is_down(
         "agent": "down",
         "status": "degraded",
     }
+
+
+@pytest.mark.asyncio
+async def test_list_chat_sessions_returns_summaries(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch, auth_override: None
+) -> None:
+    now = datetime(2026, 3, 10, 12, 0, tzinfo=UTC)
+    session_row = type(
+        "SessionRow",
+        (),
+        {
+            "session_id": "s-1",
+            "title": "Bellandur flood risk",
+            "last_active_at": now,
+            "total_turns": 6,
+        },
+    )()
+
+    async def _fake_list_sessions(**_: object) -> list[object]:
+        return [session_row]
+
+    monkeypatch.setattr(conversation_service, "list_sessions", _fake_list_sessions)
+
+    response = await client.get("/api/chat/sessions")
+    assert response.status_code == 200
+    assert response.json() == {
+        "sessions": [
+            {
+                "session_id": "s-1",
+                "title": "Bellandur flood risk",
+                "last_active_at": "2026-03-10T12:00:00+00:00",
+                "total_turns": 6,
+            }
+        ]
+    }
+
+
+@pytest.mark.asyncio
+async def test_get_chat_session_returns_transcript(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch, auth_override: None
+) -> None:
+    now = datetime(2026, 3, 10, 12, 0, tzinfo=UTC)
+    session_row = type(
+        "SessionRow",
+        (),
+        {"session_id": "s-1", "title": "Flood Q&A", "last_active_at": now},
+    )()
+    user_msg = type("Msg", (), {"role": "user", "message": "Hi", "timestamp": now})()
+    assistant_msg = type("Msg", (), {"role": "assistant", "message": "Hello", "timestamp": now})()
+
+    async def _fake_list_session_messages(**_: object) -> tuple[object, list[object]]:
+        return session_row, [user_msg, assistant_msg]
+
+    monkeypatch.setattr(conversation_service, "list_session_messages", _fake_list_session_messages)
+
+    response = await client.get("/api/chat/sessions/s-1")
+    assert response.status_code == 200
+    assert response.json() == {
+        "session_id": "s-1",
+        "title": "Flood Q&A",
+        "last_active_at": "2026-03-10T12:00:00+00:00",
+        "messages": [
+            {"role": "user", "message": "Hi", "timestamp": "2026-03-10T12:00:00+00:00"},
+            {"role": "assistant", "message": "Hello", "timestamp": "2026-03-10T12:00:00+00:00"},
+        ],
+    }
+
+
+@pytest.mark.asyncio
+async def test_get_chat_session_returns_not_found_for_missing(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch, auth_override: None
+) -> None:
+    async def _fake_list_session_messages(**_: object) -> tuple[None, list[object]]:
+        return None, []
+
+    monkeypatch.setattr(conversation_service, "list_session_messages", _fake_list_session_messages)
+
+    response = await client.get("/api/chat/sessions/missing")
+    assert response.status_code == 404

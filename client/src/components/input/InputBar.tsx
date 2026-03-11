@@ -6,6 +6,7 @@ import SuggestedPrompts from "@/components/chat/SuggestedPrompts";
 interface InputBarProps {
   input: string;
   isSending: boolean;
+  readOnlyMode: boolean;
   prompts: string[];
   showPrompts: boolean;
   onChange: (value: string) => void;
@@ -16,6 +17,7 @@ interface InputBarProps {
 export default function InputBar({
   input,
   isSending,
+  readOnlyMode,
   prompts,
   showPrompts,
   onChange,
@@ -35,7 +37,7 @@ export default function InputBar({
       }}
     >
       <Stack spacing={2}>
-        {showPrompts ? <SuggestedPrompts prompts={prompts} onSelect={onSelectPrompt} /> : null}
+        {showPrompts && !readOnlyMode ? <SuggestedPrompts prompts={prompts} onSelect={onSelectPrompt} /> : null}
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ sm: "flex-end" }}>
           <TextField
             fullWidth
@@ -43,9 +45,13 @@ export default function InputBar({
             minRows={1}
             maxRows={4}
             value={input}
+            disabled={readOnlyMode}
             placeholder="Ask about flood risk, AQI, traffic, power..."
             onChange={(event) => onChange(event.target.value)}
             onKeyDown={(event) => {
+              if (readOnlyMode) {
+                return;
+              }
               if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
                 onSend();
@@ -61,7 +67,7 @@ export default function InputBar({
           <Button
             variant="contained"
             onClick={onSend}
-            disabled={!input.trim() || isSending}
+            disabled={readOnlyMode || !input.trim() || isSending}
             startIcon={isSending ? <StopRoundedIcon /> : <SendRoundedIcon />}
             sx={{ minHeight: 44, minWidth: { xs: "100%", sm: 132 } }}
             aria-label={isSending ? "Stop response" : "Send message"}

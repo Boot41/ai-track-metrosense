@@ -292,7 +292,11 @@ class Session(Base):
     __tablename__ = "sessions"
 
     session_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=True, index=True
+    )
     user_role: Mapped[str] = mapped_column(String(64), nullable=False)
+    title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     last_active_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     total_turns: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
