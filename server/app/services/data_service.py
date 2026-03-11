@@ -303,43 +303,53 @@ async def get_aqi_summary(
     Returns avg/min/max AQI and dominant category per calendar month.
     Use this instead of get_aqi_historical for annual trends or year-long summaries.
     """
-    month_col = func.date_trunc("month", AirQualityObservation.observed_at).label("month")
-
-    # dominant_category: category that appears most often each month
-    dom_sub = (
+    # Step 1: monthly aggregate stats
+    aqi_month = func.date_trunc("month", AirQualityObservation.observed_at)
+    agg_stmt = (
         select(
-            func.date_trunc("month", AirQualityObservation.observed_at).label("m"),
-            AirQualityObservation.aqi_category,
-            func.count().label("cnt"),
-        )
-        .where(AirQualityObservation.location_id == location_id)
-        .group_by(
-            func.date_trunc("month", AirQualityObservation.observed_at),
-            AirQualityObservation.aqi_category,
-        )
-        .subquery()
-    )
-    dom_stmt = (
-        select(dom_sub.c.m, dom_sub.c.aqi_category)
-        .distinct(dom_sub.c.m)
-        .order_by(dom_sub.c.m, dom_sub.c.cnt.desc())
-    )
-    dom_rows = (await session.execute(dom_stmt)).all()
-    dom_map: dict[str, str] = {str(r.m)[:7]: r.aqi_category for r in dom_rows}
-
-    stmt = (
-        select(
-            month_col,
+            aqi_month.label("month"),
             func.avg(AirQualityObservation.aqi_value).label("avg_aqi"),
             func.min(AirQualityObservation.aqi_value).label("min_aqi"),
             func.max(AirQualityObservation.aqi_value).label("max_aqi"),
             func.count().label("readings"),
         )
         .where(AirQualityObservation.location_id == location_id)
-        .group_by(month_col)
-        .order_by(month_col)
+        .group_by(aqi_month)
+        .order_by(aqi_month)
     )
-    rows = (await session.execute(stmt)).all()
+    agg_rows = (await session.execute(agg_stmt)).all()
+
+    # Step 2: category counts per month — pick dominant in Python
+    # Reuse the same expression object so asyncpg prepared statements share one bind param
+    cat_month = func.date_trunc("month", AirQualityObservation.observed_at)
+    cat_stmt = (
+        select(
+            cat_month.label("month"),
+            AirQualityObservation.aqi_category,
+            func.count().label("cnt"),
+        )
+        .where(
+            AirQualityObservation.location_id == location_id,
+            AirQualityObservation.aqi_category.is_not(None),
+        )
+        .group_by(
+            cat_month,
+            AirQualityObservation.aqi_category,
+        )
+        .order_by(
+            cat_month,
+            func.count().desc(),
+        )
+    )
+    cat_rows = (await session.execute(cat_stmt)).all()
+
+    # Build month → dominant category map (first row per month has highest count)
+    dom_map: dict[str, str] = {}
+    for r in cat_rows:
+        key = str(r.month)[:7]
+        if key not in dom_map and r.aqi_category:
+            dom_map[key] = r.aqi_category
+
     return [
         {
             "month": str(r.month)[:7],
@@ -350,7 +360,7 @@ async def get_aqi_summary(
             "dominant_category": dom_map.get(str(r.month)[:7]),
             "readings": r.readings,
         }
-        for r in rows
+        for r in agg_rows
     ]
 
 
@@ -363,7 +373,8 @@ async def get_weather_summary(
     Use this instead of get_weather_historical for annual or seasonal analysis.
     """
     zone_id = await _resolve_zone_id(session, location_id)
-    month_col = func.date_trunc("month", WeatherObservation.observed_at).label("month")
+    month_expr = func.date_trunc("month", WeatherObservation.observed_at)
+    month_col = month_expr.label("month")
     stmt = (
         select(
             month_col,
@@ -375,8 +386,8 @@ async def get_weather_summary(
             func.count().label("readings"),
         )
         .where(WeatherObservation.location_id == zone_id)
-        .group_by(month_col)
-        .order_by(month_col)
+        .group_by(month_expr)
+        .order_by(month_expr)
     )
     rows = (await session.execute(stmt)).all()
 
@@ -419,7 +430,8 @@ async def get_weather_extremes(
         else WeatherObservation.rainfall_mm_24hour
     )
 
-    date_col = func.date_trunc("day", WeatherObservation.observed_at).label("date")
+    date_expr = func.date_trunc("day", WeatherObservation.observed_at)
+    date_col = date_expr.label("date")
     agg_val = func.max(obs_col).label("value")
 
     stmt = (
@@ -430,7 +442,7 @@ async def get_weather_extremes(
             agg_val,
         )
         .where(obs_col.is_not(None))
-        .group_by(date_col, WeatherObservation.location_id, WeatherObservation.station_name)
+        .group_by(date_expr, WeatherObservation.location_id, WeatherObservation.station_name)
         .order_by(agg_val.desc())
         .limit(top_n)
     )
