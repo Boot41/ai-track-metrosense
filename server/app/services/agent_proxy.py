@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import time
 from typing import Any
 
 import httpx
+from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings
+from app.services import conversation_service
 
 CHAT_TIMEOUT_SECONDS = 30.0
 
@@ -55,7 +59,13 @@ async def _ensure_session(
     response.raise_for_status()
 
 
-async def get_chat_response(settings: Settings, session_id: str, message: str) -> dict[str, Any]:
+async def get_chat_response(
+    settings: Settings,
+    db_session: AsyncSession,
+    session_id: str,
+    message: str,
+) -> dict[str, Any]:
+    started_at = time.perf_counter()
     headers = _auth_headers(settings)
     async with httpx.AsyncClient(timeout=CHAT_TIMEOUT_SECONDS) as client:
         base_url = settings.agent_server_url.rstrip("/")
@@ -87,6 +97,22 @@ async def get_chat_response(settings: Settings, session_id: str, message: str) -
         raise ValueError("Agent response must be a list of events")
 
     message_text = _extract_message_from_events(events)
+    latency_ms = int((time.perf_counter() - started_at) * 1000)
+
+    try:
+        await conversation_service.upsert_session(db_session, session_id=session_id)
+        await conversation_service.append_turn(
+            db_session,
+            session_id=session_id,
+            user_message=message,
+            assistant_message=message_text,
+            agents_invoked=[],
+            latency_ms=latency_ms,
+        )
+        await db_session.commit()
+    except Exception:
+        await db_session.rollback()
+        logger.exception("Failed to persist conversation history for session_id={}", session_id)
 
     return {
         "message": message_text,

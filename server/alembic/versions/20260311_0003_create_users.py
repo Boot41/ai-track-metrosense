@@ -7,8 +7,8 @@ Create Date: 2026-03-11
 
 from __future__ import annotations
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 
 revision = "20260311_0003"
 down_revision = "20260311_0002"
@@ -17,6 +17,11 @@ depends_on = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    exists = bind.execute(sa.text("SELECT to_regclass('public.users')")).scalar()
+    if exists is not None:
+        return
+
     op.create_table(
         "users",
         sa.Column("id", sa.Integer(), primary_key=True),

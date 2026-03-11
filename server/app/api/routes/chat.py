@@ -3,9 +3,10 @@ from __future__ import annotations
 import httpx
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, ConfigDict
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
-from app.api.deps import settings
+from app.api.deps import db_session, settings
 from app.core.config import Settings
 from app.services import agent_proxy
 
@@ -92,10 +93,12 @@ def _error_response(code: str, message: str, status_code: int) -> JSONResponse:
 async def chat(
     payload: ChatRequest,
     app_settings: Settings = Depends(settings),
+    session: AsyncSession = Depends(db_session),
 ) -> ChatResponse | JSONResponse:
     try:
         response_payload = await agent_proxy.get_chat_response(
             settings=app_settings,
+            db_session=session,
             session_id=payload.session_id,
             message=payload.message,
         )
