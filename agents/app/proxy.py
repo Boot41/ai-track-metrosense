@@ -3,8 +3,12 @@ from __future__ import annotations
 import os
 from typing import Iterable
 
+from dotenv import load_dotenv
 import httpx
 from fastapi import FastAPI, Header, HTTPException, Request, Response
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = FastAPI(title="MetroSense Agents Proxy")
 
