@@ -288,3 +288,160 @@ async def get_ward_profile(session: AsyncSession, ward_id: str) -> dict[str, Any
     if row is None:
         return None
     return _row_to_dict(row)
+
+
+# ---------------------------------------------------------------------------
+# Aggregation queries — return compact monthly/ranked summaries instead of
+# raw time-series rows so the agent can reason over the data directly.
+# ---------------------------------------------------------------------------
+
+async def get_aqi_summary(
+    session: AsyncSession, location_id: str
+) -> list[dict[str, Any]]:
+    """Monthly AQI aggregates for a neighbourhood — up to 12 rows for a full year.
+
+    Returns avg/min/max AQI and dominant category per calendar month.
+    Use this instead of get_aqi_historical for annual trends or year-long summaries.
+    """
+    month_col = func.date_trunc("month", AirQualityObservation.observed_at).label("month")
+
+    # dominant_category: category that appears most often each month
+    dom_sub = (
+        select(
+            func.date_trunc("month", AirQualityObservation.observed_at).label("m"),
+            AirQualityObservation.aqi_category,
+            func.count().label("cnt"),
+        )
+        .where(AirQualityObservation.location_id == location_id)
+        .group_by(
+            func.date_trunc("month", AirQualityObservation.observed_at),
+            AirQualityObservation.aqi_category,
+        )
+        .subquery()
+    )
+    dom_stmt = (
+        select(dom_sub.c.m, dom_sub.c.aqi_category)
+        .distinct(dom_sub.c.m)
+        .order_by(dom_sub.c.m, dom_sub.c.cnt.desc())
+    )
+    dom_rows = (await session.execute(dom_stmt)).all()
+    dom_map: dict[str, str] = {str(r.m)[:7]: r.aqi_category for r in dom_rows}
+
+    stmt = (
+        select(
+            month_col,
+            func.avg(AirQualityObservation.aqi_value).label("avg_aqi"),
+            func.min(AirQualityObservation.aqi_value).label("min_aqi"),
+            func.max(AirQualityObservation.aqi_value).label("max_aqi"),
+            func.count().label("readings"),
+        )
+        .where(AirQualityObservation.location_id == location_id)
+        .group_by(month_col)
+        .order_by(month_col)
+    )
+    rows = (await session.execute(stmt)).all()
+    return [
+        {
+            "month": str(r.month)[:7],
+            "location_id": location_id,
+            "avg_aqi": round(float(r.avg_aqi)) if r.avg_aqi is not None else None,
+            "min_aqi": r.min_aqi,
+            "max_aqi": r.max_aqi,
+            "dominant_category": dom_map.get(str(r.month)[:7]),
+            "readings": r.readings,
+        }
+        for r in rows
+    ]
+
+
+async def get_weather_summary(
+    session: AsyncSession, location_id: str
+) -> list[dict[str, Any]]:
+    """Monthly weather aggregates for a zone — up to 12 rows for a full year.
+
+    Returns avg/max/min temperature, avg humidity, and total rainfall per month.
+    Use this instead of get_weather_historical for annual or seasonal analysis.
+    """
+    zone_id = await _resolve_zone_id(session, location_id)
+    month_col = func.date_trunc("month", WeatherObservation.observed_at).label("month")
+    stmt = (
+        select(
+            month_col,
+            func.avg(WeatherObservation.temperature_celsius).label("avg_temp_c"),
+            func.max(WeatherObservation.temperature_celsius).label("max_temp_c"),
+            func.min(WeatherObservation.temperature_celsius).label("min_temp_c"),
+            func.avg(WeatherObservation.humidity_percent).label("avg_humidity_pct"),
+            func.sum(WeatherObservation.rainfall_mm_hourly).label("total_rainfall_mm"),
+            func.count().label("readings"),
+        )
+        .where(WeatherObservation.location_id == zone_id)
+        .group_by(month_col)
+        .order_by(month_col)
+    )
+    rows = (await session.execute(stmt)).all()
+
+    def _r1(v: Any) -> float | None:
+        return round(float(v), 1) if v is not None else None
+
+    return [
+        {
+            "month": str(r.month)[:7],
+            "zone_id": zone_id,
+            "avg_temp_c": _r1(r.avg_temp_c),
+            "max_temp_c": _r1(r.max_temp_c),
+            "min_temp_c": _r1(r.min_temp_c),
+            "avg_humidity_pct": _r1(r.avg_humidity_pct),
+            "total_rainfall_mm": _r1(r.total_rainfall_mm),
+            "readings": r.readings,
+        }
+        for r in rows
+    ]
+
+
+async def get_weather_extremes(
+    session: AsyncSession,
+    metric: str = "temperature_celsius",
+    top_n: int = 10,
+) -> list[dict[str, Any]]:
+    """Top N extreme days across all zones ranked by the chosen metric.
+
+    metric: 'temperature_celsius' (hottest days) or 'rainfall_mm_24hour' (wettest days).
+    Returns date, zone_id, station_name, and the metric value.
+    Use this to answer 'hottest day in 2023' or 'which area had the most rain'.
+    """
+    allowed_metrics = {"temperature_celsius", "rainfall_mm_24hour"}
+    if metric not in allowed_metrics:
+        metric = "temperature_celsius"
+
+    obs_col = (
+        WeatherObservation.temperature_celsius
+        if metric == "temperature_celsius"
+        else WeatherObservation.rainfall_mm_24hour
+    )
+
+    date_col = func.date_trunc("day", WeatherObservation.observed_at).label("date")
+    agg_val = func.max(obs_col).label("value")
+
+    stmt = (
+        select(
+            date_col,
+            WeatherObservation.location_id,
+            WeatherObservation.station_name,
+            agg_val,
+        )
+        .where(obs_col.is_not(None))
+        .group_by(date_col, WeatherObservation.location_id, WeatherObservation.station_name)
+        .order_by(agg_val.desc())
+        .limit(top_n)
+    )
+    rows = (await session.execute(stmt)).all()
+    return [
+        {
+            "date": str(r.date)[:10],
+            "zone_id": r.location_id,
+            "station_name": r.station_name,
+            "metric": metric,
+            "value": round(float(r.value), 1) if r.value is not None else None,
+        }
+        for r in rows
+    ]

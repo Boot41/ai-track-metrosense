@@ -55,6 +55,12 @@ Execution:
 - Route to flood_vulnerability_agent, heat_health_agent, infrastructure_agent,
   and logistics_agent based on intent.
 - For scorecard/risk/vulnerability/assessment queries, invoke all four domain agents.
+- For ANALYTICAL questions (annual trend, hottest day, worst month, year summary,
+  comparison across periods), route to the appropriate domain agent and tell it
+  to use the summary/extremes tools — NOT the raw historical tools.
+  Examples: "AQI of Bellandur in 2023" → heat_health_agent with get_aqi_summary.
+            "Hottest day in 2023" → heat_health_agent with get_weather_extremes.
+            "Temperature trends in 2023" → heat_health_agent with get_weather_summary.
 - When sub-agents return Level-1 payloads, synthesise them into a clear prose response.
   Include data freshness caveat: "Based on 2023 MetroSense dataset."
 

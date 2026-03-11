@@ -167,3 +167,40 @@ async def ward_profile(
     session: AsyncSession = Depends(db_session),
 ) -> dict[str, Any] | None:
     return await data_service.get_ward_profile(session, ward_id=ward_id)
+
+
+@router.get(
+    "/aqi/summary",
+    dependencies=[Depends(require_internal_token)],
+)
+async def aqi_summary(
+    location_id: str,
+    session: AsyncSession = Depends(db_session),
+) -> list[dict[str, Any]]:
+    """Monthly AQI aggregates (avg/min/max + dominant category) for a neighbourhood."""
+    return await data_service.get_aqi_summary(session, location_id=location_id)
+
+
+@router.get(
+    "/weather/summary",
+    dependencies=[Depends(require_internal_token)],
+)
+async def weather_summary(
+    location_id: str,
+    session: AsyncSession = Depends(db_session),
+) -> list[dict[str, Any]]:
+    """Monthly weather aggregates (avg/max/min temp, humidity, rainfall) for a zone."""
+    return await data_service.get_weather_summary(session, location_id=location_id)
+
+
+@router.get(
+    "/weather/extremes",
+    dependencies=[Depends(require_internal_token)],
+)
+async def weather_extremes(
+    metric: str = Query(default="temperature_celsius", pattern="^(temperature_celsius|rainfall_mm_24hour)$"),
+    top_n: int = Query(default=10, ge=1, le=50),
+    session: AsyncSession = Depends(db_session),
+) -> list[dict[str, Any]]:
+    """Top N extreme days across all zones for the chosen metric (hottest or wettest)."""
+    return await data_service.get_weather_extremes(session, metric=metric, top_n=top_n)
