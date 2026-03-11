@@ -1,23 +1,22 @@
-import { Route, Routes, Navigate } from "react-router-dom";
-import { Box, Typography } from "@mui/material";
-
-function HomePage() {
-  return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-    >
-      <Typography variant="h3">App Scaffold</Typography>
-    </Box>
-  );
-}
+import { Navigate, Route, Routes } from "react-router-dom";
+import ProtectedRoute from "@/auth/ProtectedRoute";
+import ChatPage from "@/pages/ChatPage";
+import LoginPage from "@/pages/LoginPage";
+import SignupPage from "@/pages/SignupPage";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

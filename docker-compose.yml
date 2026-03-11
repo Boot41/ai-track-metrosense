@@ -15,6 +15,7 @@ services:
     environment:
       ENV: development
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/app_scaffold
+      AGENT_INTERNAL_TOKEN: ${AGENT_INTERNAL_TOKEN}
     ports:
       - "8000:8000"
     depends_on:
@@ -26,6 +27,15 @@ services:
       - "5173:80"
     depends_on:
       - api
+  agents:
+    build: ./agents
+    environment:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GOOGLE_GENAI_USE_VERTEXAI: ${GOOGLE_GENAI_USE_VERTEXAI:-false}
+      AGENT_MODEL: ${AGENT_MODEL:-gemini-2.0-flash}
+      AGENT_INTERNAL_TOKEN: ${AGENT_INTERNAL_TOKEN}
+    ports:
+      - "8020:8020"
 
 volumes:
   postgres_data:

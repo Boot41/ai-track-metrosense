@@ -12,3 +12,13 @@ dist/
 *.egg-info/
 htmlcov/
 .coverage
+
+export_session_md.py
+
+# Local Codex/agent skills (user-specific)
+.codex/skills/
+.agents/skills/
+skills-lock.json
+
+server/DataSet_MetroSense
+server/Documents_Metrosense
