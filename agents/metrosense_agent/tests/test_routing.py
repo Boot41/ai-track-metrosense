@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from metrosense_agent.orchestration.routing import classify_intents, determine_response_mode
+from metrosense_agent.orchestration.routing import (
+    classify_intents,
+    determine_response_mode,
+    is_greeting_only,
+)
 
 
 def test_classify_multi_domain_query() -> None:
@@ -11,3 +15,12 @@ def test_classify_multi_domain_query() -> None:
 
 def test_scorecard_mode_detection() -> None:
     assert determine_response_mode("Give me a vulnerability scorecard for Bellandur") == "scorecard"
+
+
+def test_greeting_only_detection_true() -> None:
+    assert is_greeting_only("Hello there!") is True
+    assert is_greeting_only("Good morning") is True
+
+
+def test_greeting_plus_question_detection_false() -> None:
+    assert is_greeting_only("Hi, what is flood risk in Bellandur tonight?") is False
