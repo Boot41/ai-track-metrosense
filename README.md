@@ -22,23 +22,39 @@ MetroSense is a chat-first climate and infrastructure intelligence system for Be
 ├── Dockerfile                   # Multi-stage production build
 ├── server/                      # FastAPI backend
 │   ├── app/
-│   │   ├── api/routes/          # HTTP endpoints
+│   │   ├── api/routes/          # auth, chat, health, internal data routes
 │   │   ├── core/                # Config + logging
-│   │   ├── db/                  # SQLAlchemy models + session
+│   │   ├── db/                  # SQLAlchemy models (10+) + session
 │   │   ├── middleware/          # Error handler + request logging
-│   │   ├── services/            # Business logic layer
+│   │   ├── services/            # agent_proxy, auth, conversation, data_service
 │   │   └── main.py              # App factory
 │   ├── alembic/                 # Database migrations
+│   ├── scripts/
+│   │   └── load_metrosense_dataset.py  # CSV data loader (ready, not yet run)
+│   ├── DataSet_MetroSense/      # 6 CSVs: weather, AQI, floods, outages, traffic, lakes
+│   ├── Documents_Metrosense/    # Reference docs read by agent document_tools
 │   ├── tests/                   # Unit + integration tests
 │   └── pyproject.toml           # Dependencies + tool config
-├── agents/                      # ADK agent service (internal)
-│   ├── metrosearch_agent/        # Simple Google Search-enabled agent
-│   ├── scripts/                 # Smoke tests
+├── agents/                      # ADK agent service (internal, port 8020/8021)
+│   ├── app/proxy.py             # Lightweight proxy enforcing X-Internal-Token
+│   ├── metrosense_agent/        # Production agent (5-agent ADK hierarchy)
+│   │   ├── agent.py             # root_agent definition
+│   │   ├── config.py            # AgentSettings (model, URLs, token, docs path)
+│   │   ├── subagents/           # chat, flood, heat, infra, logistics agents
+│   │   ├── tools/               # Domain tools calling /internal/* routes
+│   │   ├── orchestration/       # routing.py + response_contract.py
+│   │   └── prompts/             # System prompts for all five agents
+│   ├── metrosearch_agent/       # Legacy Google Search skeleton (can be removed)
+│   ├── scripts/smoke_test.py    # Smoke test for backend + agent pipeline
 │   └── pyproject.toml           # Dependencies + tool config
 └── client/                      # React frontend
     ├── src/
     │   ├── App.tsx              # Router + pages
     │   ├── main.tsx             # Entry point + providers
+    │   ├── auth/                # AuthContext + ProtectedRoute
+    │   ├── components/chat/     # MessageBubble, MessageList, RiskCard, ArtifactRenderer
+    │   ├── components/input/    # InputBar
+    │   ├── pages/               # ChatPage, LoginPage, SignupPage
     │   └── lib/api.ts           # Axios instance
     ├── package.json             # Dependencies + scripts
     └── Dockerfile               # Node build → Nginx
@@ -51,9 +67,35 @@ MetroSense is a chat-first climate and infrastructure intelligence system for Be
 - `app.db` depends on `app.core` only (must NOT import from `app.services` or `app.api`)
 - Enforced by `import-linter` in CI
 
+## Agent Architecture
+
+The agents service runs a five-agent hierarchy built with Google ADK:
+
+```
+root_agent
+└── chat_agent  (intent routing, location resolution)
+    ├── flood_vulnerability_agent  (lake hydrology, flood incidents, weather)
+    ├── heat_health_agent          (AQI current/historical, ward profile, weather)
+    ├── infrastructure_agent       (power outage events, weather)
+    └── logistics_agent            (traffic current/corridor, flood incidents, weather)
+```
+
+All agent tools call token-gated `/internal/*` routes on the backend. The proxy on port 8020 enforces `X-Internal-Token` and forwards to the ADK server on port 8021. The frontend never contacts the agent service directly.
+
+## Seeding the Database
+
+Domain data lives in `server/DataSet_MetroSense/` as 6 CSVs (weather, AQI, floods, lake hydrology, outages, traffic). The loader script must be run once before agent tools can return real data:
+
+```bash
+cd server
+uv run python scripts/load_metrosense_dataset.py --replace
+```
+
+Reference documents (`Documents_Metrosense/`) are read directly from the filesystem by the agent; no database import is needed for those.
+
 ## Quick Start
 
-The agents service is protected by a shared secret header in dev. The backend talks to an agents proxy on port 8020, and that proxy forwards to the ADK server on port 8021. Set the same `AGENT_INTERNAL_TOKEN` in both services so the proxy can validate requests.
+The agents service is protected by a shared secret header in dev. The backend calls the proxy on port 8020, which forwards to the ADK server on port 8021. Set the same `AGENT_INTERNAL_TOKEN` in both services.
 
 ```bash
 # Start PostgreSQL
@@ -66,23 +108,28 @@ uv run alembic upgrade head
 export AGENT_INTERNAL_TOKEN=dev-internal-token
 uv run uvicorn app.main:app --reload --port 8010
 
-# Agents (separate terminals)
+# (One-time) Seed domain data
+uv run python scripts/load_metrosense_dataset.py --replace
+
+# ADK agent server — separate terminal
 cd agents
 uv sync
 export GOOGLE_API_KEY=your_key
 export AGENT_INTERNAL_TOKEN=dev-internal-token
+export BACKEND_INTERNAL_URL=http://localhost:8010
+export DOCUMENTS_PATH=../server/Documents_Metrosense
 uv run adk api_server --host 0.0.0.0 --port 8021 .
 
-# Agents proxy (separate terminal)
+# Agents proxy — separate terminal
 cd agents
 export AGENT_INTERNAL_TOKEN=dev-internal-token
 uv run uvicorn app.proxy:app --host 0.0.0.0 --port 8020
 
-# Optional: ADK Web UI (separate terminal)
+# Optional: ADK Web UI
 cd agents
 uv run adk web --port 8001
 
-# Frontend (separate terminal)
+# Frontend — separate terminal
 cd client
 pnpm install
 pnpm run dev
@@ -124,14 +171,25 @@ For the implemented Postgres schema + CSV loader for MetroSense golden data, see
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/health` | No | Health check |
+| GET | `/health` | No | Basic health check |
+| GET | `/api/health` | No | Composite health (backend + agent) |
 | POST | `/api/auth/signup` | No | Create account + set JWT cookie |
 | POST | `/api/auth/login` | No | Login + set JWT cookie |
 | POST | `/api/auth/logout` | Yes | Clear JWT cookie |
 | GET | `/api/auth/me` | Yes | Current user |
-| POST | `/api/chat` | Yes | Chat request (currently returns text-only; risk cards and artifacts are planned) |
-
-**Note:** The `/api/chat` endpoint currently routes requests to the agent service and retumns streamed or buffered text responses. Risk card and artifact generation (structured responses) are planned and will be implemented once the agent layer is equipped with domain tools and data access.
+| POST | `/api/chat` | Yes | Chat request — returns `response_text`, optional `risk_card` and `artifact` |
+| GET | `/internal/weather/current` | Token | Current weather by zone (agent use only) |
+| GET | `/internal/weather/historical` | Token | Historical weather by zone (agent use only) |
+| GET | `/internal/aqi/current` | Token | Current AQI by neighbourhood (agent use only) |
+| GET | `/internal/aqi/historical` | Token | Historical AQI by neighbourhood (agent use only) |
+| GET | `/internal/lakes` | Token | Lake hydrology records (agent use only) |
+| GET | `/internal/floods` | Token | Flood incidents by ward (agent use only) |
+| GET | `/internal/outages` | Token | Power outage events by ward (agent use only) |
+| GET | `/internal/traffic/current` | Token | Current traffic by zone (agent use only) |
+| GET | `/internal/traffic/corridor` | Token | Traffic corridor data (agent use only) |
+| GET | `/internal/ward/profile` | Token | Ward demographic/infrastructure profile (agent use only) |
+| GET | `/internal/locations` | Token | List all known locations (agent use only) |
+| GET | `/internal/locations/resolve` | Token | Resolve location name to canonical record (agent use only) |
 
 ## Environment Variables
 
@@ -146,7 +204,7 @@ For the implemented Postgres schema + CSV loader for MetroSense golden data, see
 | `JWT_EXPIRES_MINUTES` | `60` | JWT expiration in minutes |
 | `AUTH_COOKIE_NAME` | `metrosense_token` | Auth cookie name |
 | `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Allowed origins for cookies |
-| `AGENT_INTERNAL_TOKEN` | *(required)* | Shared secret for backend-to-agent proxy authentication (e.g., `dev-internal-token` in dev) |
+| `AGENT_INTERNAL_TOKEN` | *(required)* | Shared secret for backend-to-agent proxy authentication |
 | `AGENT_SERVER_URL` | `http://localhost:8020` | Internal URL for agents proxy |
 
 ### Agents (agents/)
@@ -156,25 +214,30 @@ For the implemented Postgres schema + CSV loader for MetroSense golden data, see
 | `GOOGLE_API_KEY` | *(required)* | Google Generative AI API key for Gemini model |
 | `AGENT_INTERNAL_TOKEN` | *(required)* | Shared secret for proxy authentication (must match backend) |
 | `AGENT_MODEL` | `gemini-2.5-flash` | Gemini model to use |
-| `ADK_BASE_URL` | `http://localhost:8021` | (optional) ADK API server URL |
+| `BACKEND_INTERNAL_URL` | `http://localhost:8010` | Backend base URL for internal data routes |
+| `DOCUMENTS_PATH` | *(required)* | Filesystem path to `Documents_Metrosense/` directory |
+| `ADK_BASE_URL` | `http://localhost:8021` | ADK API server URL (used by proxy) |
 
 ## Current Implementation Status
 
 ### What Works (✅)
 - **Auth:** Signup, login, logout, JWT cookies, password hashing
-- **Chat Endpoint:** Routes messages to agent service; returns text responses
-- **Database:** Schema defined for weather, AQI, flooding, outages, traffic, and location data
-- **Backend-to-Agent Proxy:** Validates X-Internal-Token, forwards sessions to ADK
-- **Frontend UI:** Chat interface, login/signup, message display, component stubs for RiskCard and Artifacts
-- **Health Checks:** Backend and composite backend+agent status endpoints
+- **Chat Endpoint:** Routes messages through the five-agent hierarchy; returns structured `ChatResponse` with `response_text`, optional `risk_card`, and `artifact` fields
+- **Database:** Schema defined for weather, AQI, flooding, outages, traffic, location master, ward profiles, sessions, and conversation history (10+ models)
+- **Internal Data Routes:** All `/internal/*` endpoints (weather, AQI, lakes, floods, outages, traffic, ward, locations) — token-gated and consumed by agent tools
+- **Agent Subagents:** Five-agent ADK hierarchy (`root → chat → flood / heat / infra / logistics`) with domain-specific tools calling the backend
+- **Agent Tools:** `flood_tools`, `heat_tools`, `infra_tools`, `logistics_tools`, `weather_tools`, `location_tools`, `document_tools` — all wired to backend internal routes
+- **Orchestration:** Keyword-based intent routing (`routing.py`) and structured response builder (`response_contract.py`)
+- **Backend Services:** `data_service.py` (all domain queries), `conversation_service.py` (session + turn persistence), `agent_proxy.py` (ADK response parsing)
+- **Frontend UI:** Chat interface with `MessageBubble`, `MessageList`, `ThinkingIndicator`, `SuggestedPrompts`, login/signup pages, `RiskCard` and `ArtifactRenderer` components
+- **Health Checks:** Simple `/health` and composite `/api/health` (backend + agent status)
 
 ### What's Missing (📋)
-- **Data Loading:** CSV files and documents exist but are not yet seeded into PostgreSQL
-- **Agent Tools:** Only google_search available; custom flood-risk, AQI, outage, and traffic tools not yet implemented
-- **Structured Responses:** Risk cards and artifacts are rendered in UI templates but not yet generated by agent
-- **Streaming:** Responses are single POST/response; SSE or WebSocket streaming not yet implemented
-- **Message History:** Conversations stored in-memory only; database persistence not yet implemented
-- **E2E Tests:** Playwright configuration exists but test suites not written
+- **Data Loading:** 6 CSVs exist in `DataSet_MetroSense/` but are not yet seeded — run `scripts/load_metrosense_dataset.py --replace` once
+- **Structured Risk Card Population:** Schema and contract are end-to-end wired; agent logic needs real data to populate `risk_card` and `artifact` fields
+- **Message Context:** `ConversationHistory` is persisted but previous turns are not yet injected back into the agent session
+- **Streaming:** Responses are buffered POST/response; SSE or WebSocket not yet implemented
+- **E2E Tests:** Playwright configuration exists but no test suites written yet
 
 ### Next Steps
 See **Next Steps (Recommended Order)** in [AGENTS.md](AGENTS.md#next-steps-recommended-order) for the development roadmap.

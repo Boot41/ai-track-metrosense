@@ -60,11 +60,12 @@ UrbanClimate AI is a **multi-agent orchestration system** built on Google ADK. I
 
 **Problem:** Adds a redundant LLM call, introduces a fragile parsing step, and creates an unnecessary agent boundary.
 
-**Decision:** JSON output is enforced as a **typed contract at every agent boundary** using Pydantic v2 strict mode. Every domain agent returns a Level-1 typed payload. The Orchestrator runs a pure Python merge function to produce the Level-2 Unified Risk Scorecard. No LLM call is involved in this merge step — it is deterministic.
+**Decision:** JSON output is enforced as a **typed contract at every agent boundary** using Pydantic v2 strict mode. Every domain agent returns a Level-1 typed payload. The Orchestrator runs a pure Python merge function to produce Level-2 structured blocks (risk card/artifact) when requested and available. The Chat Agent then returns the canonical Level-2 user delivery contract for the frontend. No extra formatting agent is added.
 
 ```
 Domain Agent Output  →  Pydantic Level-1 Payload  (per domain)
-Orchestrator Merge   →  Pydantic Level-2 Scorecard (unified)
+Orchestrator Merge   →  Level-2 Structured Blocks  (deterministic)
+Chat Agent Output    →  Level-2 User Delivery Contract (single frontend shape)
 ```
 
 ---
@@ -160,7 +161,7 @@ Chat Agent (main conversational interface — only agent user talks to)
 
 **Runner:** The ADK Runner is not an agent you design. It is the ADK infrastructure that executes the Root Agent, manages the event loop, and handles tool call cycles. You configure it in one line — `Runner(agent=root_agent)`. It is not a component in the architecture diagram.
 
-**Root Agent:** Pure routing and state management. Never talks to the user directly. Owns parallel dispatch, global guardrails, and the Level-1 to Level-2 scorecard merge.
+**Root Agent:** Pure routing and state management. Never talks to the user directly. Owns parallel dispatch, global guardrails, and deterministic Level-1 to Level-2 structured block merge.
 
 **Chat Agent:** The only agent that has a conversation with the user. Owns session memory, NL synthesis, citation formatting, chart follow-up prompts, and scorecard triggers. It calls domain agents directly — no round-trip back through the Root Agent.
 
@@ -197,7 +198,7 @@ The folder structure pre-partitions tool logic by concern inside each agent so s
 │                                                                      │
 │  • Route intent, manage state bag                                    │
 │  • Parallel dispatch via asyncio.gather()                            │
-│  • Merge Level-1 payloads → Level-2 Scorecard                       │
+│  • Merge Level-1 payloads → Level-2 structured blocks               │
 │  • Apply global guardrails                                           │
 └───────────────────────────┬─────────────────────────────────────────┘
                             │
@@ -225,7 +226,7 @@ AGENT          AGENT         AGENT          AGENT
                     Each returns Level-1 Pydantic Payload
                                │
                     Chat Agent synthesizes NL response
-                    Root Agent merges → Level-2 Scorecard
+                    Root Agent merges → Level-2 structured blocks
 ```
 
 ---
@@ -264,8 +265,8 @@ Flood Agent                      Logistics Agent
         └──────────────┬───────────────────┘
                        ▼
 Chat Agent collects Level-1 payloads
-Root Agent merges → Level-2 Unified Scorecard
-Chat Agent synthesizes NL answer with citations
+Root Agent merges → Level-2 structured blocks (risk_card/artifact when applicable)
+Chat Agent synthesizes canonical Level-2 user response with citations
         │
         │ Complete response JSON
         ▼
@@ -480,7 +481,7 @@ Document RAG Tools:
 "If 60mm tonight, which underpasses?"      → Flood + Logistics (parallel)
 "Compare humidity vs decade average"       → Heat Agent (historical mode)
 "Tree-fall risk near MG Road?"             → Infra Agent (zone filter)
-"Risk scorecard for Bellandur"             → All agents → Unified Scorecard
+"Risk scorecard for Bellandur"             → All agents → structured `risk_card` block
 "Will ORR delay cross 1.5x tonight?"       → Logistics Agent only
 ```
 
@@ -505,6 +506,15 @@ After any trend or comparative answer, Chat Agent evaluates whether a chart woul
   "confidence": 0.87,
   "status": "ok | partial | error",
   "data": {},
+  "context_used": {
+    "resolved_location_id": "loc_bellandur_001",
+    "resolved_location_name": "Bellandur",
+    "intent": "flood_risk",
+    "time_window": "next_6h",
+    "assumptions": [
+      "Rainfall threshold sourced from drainage_plan_2019_07 section 4.2"
+    ]
+  },
   "citations": [
     {
       "type": "database",
@@ -528,67 +538,65 @@ After any trend or comparative answer, Chat Agent evaluates whether a chart woul
 }
 ```
 
-### Level-2 — Unified Risk Scorecard (Orchestrator pure Python merge)
+`context_used` is mandatory in Level-1 so downstream synthesis remains explainable and auditable.
+
+### Level-2 — User Delivery Contract (backend to frontend)
 
 ```json
 {
-  "scorecard_id": "uuid-abc",
-  "generated_at": "2024-07-15T18:30:05+05:30",
-  "query_context": "If it rains 60mm tonight, which underpasses need barricading?",
-  "neighborhoods": [
+  "session_id": "uuid",
+  "response_mode": "text | scorecard | artifact",
+  "response_text": "Bellandur flood risk is high for tonight due to rainfall intensity and lake fill levels.",
+  "citations_summary": [
     {
-      "name": "Bellandur",
-      "ward_id": "ward_042",
-      "flood_probability": 0.91,
-      "flood_risk_tier": "CRITICAL",
-      "power_outage_risk": 0.62,
-      "traffic_delay_index": 2.4,
-      "heat_health_risk": 0.22,
-      "treefall_risk": 0.38,
-      "barricade_recommended": true,
-      "barricade_locations": [
-        "Outer Ring Road underpass km 14",
-        "Agara underpass"
-      ],
-      "emergency_readiness": {
-        "recommendation": "EVACUATE low-lying streets by 20:00",
-        "resource_alert": "Pre-position NDRF unit at Bellandur Junction",
-        "confidence": 0.87
-      }
-    }
-  ],
-  "key_drivers": [
-    {
-      "factor": "Rainfall intensity",
-      "value": "62mm in 3h",
-      "impact": "high"
+      "source_type": "database",
+      "source_id": "lake_hydrology:lake_003",
+      "label": "Bellandur fill percentage"
     },
     {
-      "factor": "Drainage capacity gap",
-      "value": "Documented undersized culvert near ORR crossing",
-      "impact": "high",
-      "citation": {
-        "document_id": "drainage_plan_2019_07",
-        "page": 84
-      }
-    },
-    {
-      "factor": "Lake backflow risk",
-      "value": "Bellandur fill 92%",
-      "impact": "medium"
+      "source_type": "document",
+      "source_id": "drainage_plan_2019_07#section_4_2",
+      "label": "ORR culvert capacity"
     }
   ],
-  "global_summary": {
-    "total_zones_analyzed": 12,
-    "critical_zones": 2,
-    "high_risk_zones": 4,
-    "logistics_fleet_advisory": "Expect 2.1x average TTD delay on ORR corridor",
-    "overall_emergency_posture": "ELEVATED"
-  },
-  "data_freshness": {
+  "data_freshness_summary": {
     "telemetry_lag_seconds": 42,
-    "last_imd_bulletin": "2024-07-15T06:00:00+05:30",
-    "pg_query_time_ms": 310
+    "stale_sources": []
+  },
+  "risk_card": null,
+  "artifact": null,
+  "follow_up_prompt": "Would you like this as a chart?"
+}
+```
+
+`risk_card` and `artifact` are nullable and populated only when explicitly requested by the user and supported by implemented capabilities.
+
+### Level-2 Structured Block Example — `risk_card`
+
+```json
+{
+  "risk_card": {
+    "scorecard_id": "uuid-abc",
+    "generated_at": "2024-07-15T18:30:05+05:30",
+    "query_context": "If it rains 60mm tonight, which underpasses need barricading?",
+    "neighborhoods": [
+      {
+        "name": "Bellandur",
+        "ward_id": "ward_042",
+        "flood_probability": 0.91,
+        "flood_risk_tier": "CRITICAL",
+        "power_outage_risk": 0.62,
+        "traffic_delay_index": 2.4,
+        "heat_health_risk": 0.22,
+        "treefall_risk": 0.38,
+        "barricade_recommended": true
+      }
+    ],
+    "global_summary": {
+      "total_zones_analyzed": 12,
+      "critical_zones": 2,
+      "high_risk_zones": 4
+    }
   }
 }
 ```
@@ -917,7 +925,7 @@ session_id
 role                   -- user / assistant
 message
 agents_invoked
-response_mode          -- text / scorecard / chart
+response_mode          -- text / scorecard / artifact
 cited_documents
 cited_records
 timestamp
@@ -1357,7 +1365,7 @@ The system is split into three independently deployable layers. Each layer has a
 │  • ADK Runner executes Root Agent                                    │
 │  • Root Agent → Chat Agent → Domain Sub-Agents                      │
 │  • Domain agents connect directly to Postgres + file storage (dev)  │
-│  • Returns complete structured response — NL text + scorecard JSON   │
+│  • Returns complete structured response — NL text + nullable blocks  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1375,14 +1383,16 @@ Request:
   "user_role": "bbmp_internal"
 }
 
-Response:
+Response (canonical Level-2 shape):
 {
   "session_id": "uuid",
+  "response_mode": "text",
   "response_text": "Based on current conditions...",
-  "scorecard": null,
-  "chart_followup": null,
-  "citations": [],
-  "data_freshness": {}
+  "citations_summary": [],
+  "data_freshness_summary": {},
+  "risk_card": null,
+  "artifact": null,
+  "follow_up_prompt": null
 }
 ```
 
@@ -1397,7 +1407,7 @@ Request:
   "user_role": "bbmp_internal"
 }
 
-Response: same shape as above
+Response: same canonical Level-2 shape as above
 ```
 
 ---
@@ -1467,7 +1477,7 @@ urbanclimate_ai/
 │   │   ├── agent.py                     # Root OrchestratorAgent
 │   │   ├── intent_classifier.py         # Maps NL query to domain intents
 │   │   ├── context_manager.py           # Shared session state bag
-│   │   └── scorecard_merger.py          # Pure Python Level-1 to Level-2 merge
+│   │   └── scorecard_merger.py          # Pure Python Level-1 to Level-2 structured merge
 │   │
 │   ├── agents/
 │   │   ├── shared/
