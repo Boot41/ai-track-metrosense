@@ -517,13 +517,13 @@ Each instruction includes:
 ### Guardrail strings embedded in CHAT_AGENT_INSTRUCTION
 
 ```
-OFF_DOMAIN_REFUSAL = "I can only answer questions about Bengaluru's climate, flood risk, 
+OFF_DOMAIN_REFUSAL = "I can only answer questions about Bengaluru's climate, flood risk,
 air quality, power grid, and traffic. Please rephrase your question."
 
-LOCATION_NOT_FOUND = "I couldn't find '{name}' in the Bengaluru location registry. 
+LOCATION_NOT_FOUND = "I couldn't find '{name}' in the Bengaluru location registry.
 Please use a ward name or neighbourhood (e.g. 'Bellandur', 'Koramangala', 'Whitefield')."
 
-NO_DATA_AVAILABLE = "No recent data is available for {location} on {domain}. 
+NO_DATA_AVAILABLE = "No recent data is available for {location} on {domain}.
 The dataset covers historical records — please check the data freshness."
 ```
 
@@ -658,7 +658,7 @@ Execute in this order. Each step is independently testable before moving to the 
 2. Implement `server/app/services/data_service.py`
 3. Implement `server/app/api/routes/internal.py` with all 11 endpoints
 4. Register internal router in `server/app/api/router.py`
-5. **Test:** `curl -H "X-Internal-Token: dev-internal-token" http://localhost:8010/internal/weather/current?location_id=<id>` returns data
+5. **Test:** `curl -H "X-Internal-Token: <your-agent-internal-token>" http://localhost:8010/internal/weather/current?location_id=<id>` returns data
 
 ### Phase 2 — Conversation persistence
 

@@ -161,6 +161,15 @@ pnpm exec playwright install
 pnpm run test:e2e
 ```
 
+Secrets scanning (from repo root):
+```bash
+pre-commit install
+pre-commit install --hook-type pre-push
+gitleaks dir .
+```
+
+The repo root pre-commit config includes `gitleaks` hooks for both `pre-commit` and `pre-push`, so secrets are checked before commits and again before pushes. CI also runs the official Gitleaks GitHub Action on the checked-out git history.
+
 ## MetroSense Golden Dataset
 
 For the implemented Postgres schema + CSV loader for MetroSense golden data, see:
