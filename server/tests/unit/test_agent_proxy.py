@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
-
 from app.core.config import Settings
 from app.services import agent_proxy
 
@@ -15,6 +14,148 @@ async def test_agent_proxy_requires_internal_token() -> None:
     settings = Settings(agent_internal_token="")
     with pytest.raises(ValueError, match="AGENT_INTERNAL_TOKEN"):
         await agent_proxy.get_agent_health(settings)
+
+
+def test_parse_level2_payload_normalises_string_citations_summary() -> None:
+    payload = agent_proxy._parse_level2_payload(
+        '{"response_mode":"text","response_text":"Bellandur weather summary generated.",'
+        '"citations_summary":["get_weather_summary (Bellandur)"],'
+        '"data_freshness_summary":{}}',
+        session_id="test-session",
+    )
+
+    assert payload["citations_summary"] == [{"source": "get_weather_summary (Bellandur)"}]
+
+
+def test_parse_level2_payload_normalises_legacy_risk_card_shape() -> None:
+    payload = agent_proxy._parse_level2_payload(
+        '{"response_mode":"text","response_text":"Risk is elevated.",'
+        '"citations_summary":[],"data_freshness_summary":{},'
+        '"risk_card":{"location":"Bellandur","as_of":"2026-03-11T00:00:00Z",'
+        '"flood_risk":{"score":8,"label":"High","detail":"Flooding likely."},'
+        '"outage_risk":{"score":6,"label":"Moderate","detail":"Treefall outages possible."},'
+        '"traffic_delay_index":{"score":7,"label":"High","detail":"Slow corridors expected."},'
+        '"emergency_readiness":{"score":4,"label":"Reduced","detail":"Keep pumps on standby."},'
+        '"advisory":"Avoid low-lying roads."}}',
+        session_id="test-session",
+    )
+
+    assert payload["risk_card"] == {
+        "neighborhood": "Bellandur",
+        "generated_at": "2026-03-11T00:00:00Z",
+        "overall_risk_score": 6.8,
+        "flood_risk": {"probability": 0.8, "severity": "HIGH", "congestion_score": 8.0},
+        "power_outage_risk": {
+            "probability": 0.6,
+            "severity": "MODERATE",
+            "congestion_score": 6.0,
+        },
+        "traffic_delay_index": {
+            "probability": 0.7,
+            "severity": "HIGH",
+            "congestion_score": 7.0,
+        },
+        "health_advisory": None,
+        "emergency_readiness": {
+            "recommendation": "Keep pumps on standby.",
+            "actions": None,
+        },
+        "rainfall_expected_mm_per_hr": None,
+        "rainfall_classification": None,
+        "barricade_recommendations": None,
+    }
+
+
+def test_parse_level2_payload_converts_legacy_weather_comparison_blob_to_table() -> None:
+    payload = agent_proxy._parse_level2_payload(
+        "summary: Here's a comparison of weather conditions in Bellandur for September and "
+        "October 2025. September was wetter and more humid with slightly lower average "
+        "temperatures compared to October. details: {'september_2025': {'location': "
+        "'Bellandur (zone_east)', 'month': 'September 2025', 'avg_temperature_celsius': 23.3, "
+        "'max_temperature_celsius': 31.5, 'min_temperature_celsius': 15.1, "
+        "'avg_humidity_pct': 89.0, 'total_rainfall_mm': 697.3, 'readings_count': 2880}, "
+        "'october_2025': {'location': 'Bellandur (zone_east)', 'month': 'October 2025', "
+        "'avg_temperature_celsius': 24.3, 'max_temperature_celsius': 32.2, "
+        "'min_temperature_celsius': 14.0, 'avg_humidity_pct': 78.2, "
+        "'total_rainfall_mm': 208.4, 'readings_count': 2976}, 'comparison': "
+        "{'temperature_difference': 'October 2025 had a slightly higher average "
+        "temperature (+1.0C) than September 2025.'}}. health_advisory: "
+        "September's higher humidity suggests higher mosquito risk.",
+        session_id="test-session",
+    )
+
+    assert payload["response_text"].startswith("Here's a comparison of weather conditions")
+    assert payload["response_text"].endswith(
+        "Health note: September's higher humidity suggests higher mosquito risk."
+    )
+    assert payload["artifact"] == {
+        "type": "table",
+        "title": "Weather Comparison",
+        "columns": ["Metric", "September 2025", "October 2025"],
+        "rows": [
+            ["Avg Temperature Celsius", 23.3, 24.3],
+            ["Max Temperature Celsius", 31.5, 32.2],
+            ["Min Temperature Celsius", 15.1, 14.0],
+            ["Avg Humidity Pct", 89.0, 78.2],
+            ["Total Rainfall Mm", 697.3, 208.4],
+            ["Readings Count", 2880, 2976],
+            [
+                "Temperature Difference",
+                "October 2025 had a slightly higher average temperature (+1.0C) than "
+                "September 2025.",
+                None,
+            ],
+        ],
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
+
+
+def test_parse_level2_payload_converts_comparison_table_blob_to_table() -> None:
+    payload = agent_proxy._parse_level2_payload(
+        "summary: In Bellandur, October 2025 was slightly warmer with less rainfall and "
+        "lower humidity compared to September 2025. details: {'comparison_table': ["
+        "{'month': 'September 2025', 'average_temperature_celsius': 23.3, "
+        "'max_temperature_celsius': 31.5, 'min_temperature_celsius': 15.1, "
+        "'average_humidity_pct': 89.0, 'total_rainfall_mm': 697.3}, "
+        "{'month': 'October 2025', 'average_temperature_celsius': 24.3, "
+        "'max_temperature_celsius': 32.2, 'min_temperature_celsius': 14.0, "
+        "'average_humidity_pct': 78.2, 'total_rainfall_mm': 208.4}]}. "
+        "health_advisory: Stay hydrated.",
+        session_id="test-session",
+    )
+
+    assert payload["artifact"] == {
+        "type": "table",
+        "title": "Weather Comparison",
+        "columns": ["Metric", "September 2025", "October 2025"],
+        "rows": [
+            ["Average Temperature Celsius", 23.3, 24.3],
+            ["Max Temperature Celsius", 31.5, 32.2],
+            ["Min Temperature Celsius", 15.1, 14.0],
+            ["Average Humidity Pct", 89.0, 78.2],
+            ["Total Rainfall Mm", 697.3, 208.4],
+        ],
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
+
+
+def test_parse_level2_payload_converts_top_level_comparison_table_json_to_table() -> None:
+    payload = agent_proxy._parse_level2_payload(
+        '{"summary":"Comparison ready.","comparison_table":['
+        '{"month":"September 2025","average_temperature_celsius":23.3},'
+        '{"month":"October 2025","average_temperature_celsius":24.3}'
+        "]}",
+        session_id="test-session",
+    )
+
+    assert payload["response_text"] == "Comparison ready."
+    assert payload["artifact"] == {
+        "type": "table",
+        "title": "Comparison Table",
+        "columns": ["Metric", "September 2025", "October 2025"],
+        "rows": [["Average Temperature Celsius", 23.3, 24.3]],
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
 
 
 class _FakeResponse:
@@ -103,6 +244,38 @@ class _OverflowThenSuccessClient:
         )
 
 
+class _CaptureMessageClient:
+    last_message: str | None = None
+
+    def __init__(self, *_: object, **__: object) -> None:
+        self._call_count = 0
+
+    async def __aenter__(self) -> _CaptureMessageClient:
+        return self
+
+    async def __aexit__(self, exc_type: object, exc: object, tb: object) -> None:
+        return None
+
+    async def post(self, *_: object, **kwargs: object) -> _FakeResponse:
+        self._call_count += 1
+        if self._call_count == 1:
+            return _FakeResponse(status_code=201)
+        body = kwargs.get("json")
+        assert isinstance(body, dict)
+        new_message = body.get("newMessage")
+        assert isinstance(new_message, dict)
+        parts = new_message.get("parts")
+        assert isinstance(parts, list)
+        text_part = parts[0]
+        assert isinstance(text_part, dict)
+        _CaptureMessageClient.last_message = text_part.get("text")
+        return _FakeResponse(
+            json_payload=[
+                {"content": {"role": "model", "parts": [{"text": "Persisted assistant reply"}]}}
+            ]
+        )
+
+
 @pytest.mark.asyncio
 async def test_get_chat_response_persists_and_commits(monkeypatch: pytest.MonkeyPatch) -> None:
     settings = Settings(
@@ -123,6 +296,11 @@ async def test_get_chat_response_persists_and_commits(monkeypatch: pytest.Monkey
     )
     monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", upsert)
     monkeypatch.setattr(agent_proxy.conversation_service, "append_turn", append)
+    monkeypatch.setattr(
+        agent_proxy,
+        "build_runtime_context",
+        AsyncMock(return_value={"generated_at": "2026-03-11T00:00:00+00:00", "domains": {}}),
+    )
 
     payload = await agent_proxy.get_chat_response(
         settings=settings,
@@ -139,6 +317,25 @@ async def test_get_chat_response_persists_and_commits(monkeypatch: pytest.Monkey
     append.assert_awaited_once()
     db_session.commit.assert_awaited_once()
     db_session.rollback.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_append_turn_flushes_before_audit_log_fk_is_used() -> None:
+    db_session = AsyncMock()
+    db_session.add_all = MagicMock()
+
+    turn_id = await agent_proxy.conversation_service.append_turn(
+        session=db_session,
+        session_id="s-1",
+        user_message="hello",
+        assistant_message="world",
+        agents_invoked=[],
+        latency_ms=10,
+    )
+
+    assert isinstance(turn_id, str)
+    db_session.add_all.assert_called_once()
+    db_session.flush.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -163,6 +360,11 @@ async def test_get_chat_response_returns_when_persistence_fails(
     )
     monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", upsert)
     monkeypatch.setattr(agent_proxy.conversation_service, "append_turn", append)
+    monkeypatch.setattr(
+        agent_proxy,
+        "build_runtime_context",
+        AsyncMock(return_value={"generated_at": "2026-03-11T00:00:00+00:00", "domains": {}}),
+    )
 
     payload = await agent_proxy.get_chat_response(
         settings=settings,
@@ -203,6 +405,11 @@ async def test_get_chat_response_retries_once_on_input_token_limit(
     )
     monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", upsert)
     monkeypatch.setattr(agent_proxy.conversation_service, "append_turn", append)
+    monkeypatch.setattr(
+        agent_proxy,
+        "build_runtime_context",
+        AsyncMock(return_value={"generated_at": "2026-03-11T00:00:00+00:00", "domains": {}}),
+    )
 
     payload = await agent_proxy.get_chat_response(
         settings=settings,
@@ -219,3 +426,46 @@ async def test_get_chat_response_retries_once_on_input_token_limit(
     append.assert_awaited_once()
     db_session.commit.assert_awaited_once()
     db_session.rollback.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_get_chat_response_injects_runtime_context(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings(
+        agent_internal_token="test-token",
+        agent_server_url="http://agent.local",
+    )
+    db_session = AsyncMock()
+    db_session.add = MagicMock()
+
+    monkeypatch.setattr(agent_proxy.httpx, "AsyncClient", _CaptureMessageClient)
+    monkeypatch.setattr(
+        agent_proxy.conversation_service, "session_owner_id", AsyncMock(return_value=None)
+    )
+    monkeypatch.setattr(
+        agent_proxy.conversation_service, "derive_session_title", lambda _: "Hello title"
+    )
+    monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", AsyncMock())
+    monkeypatch.setattr(
+        agent_proxy.conversation_service, "append_turn", AsyncMock(return_value="turn-id")
+    )
+    monkeypatch.setattr(
+        agent_proxy,
+        "build_runtime_context",
+        AsyncMock(return_value={"generated_at": "2026-03-11T00:00:00+00:00", "domains": {}}),
+    )
+
+    await agent_proxy.get_chat_response(
+        settings=settings,
+        db_session=db_session,
+        user_id=1,
+        session_id="s-ctx",
+        message="show me Bellandur flood risk",
+    )
+
+    captured = _CaptureMessageClient.last_message
+    assert captured is not None
+    assert "[MetroSense Runtime Context]" in captured
+    assert '"generated_at":"2026-03-11T00:00:00+00:00"' in captured
+    assert "[User Message]\nshow me Bellandur flood risk" in captured

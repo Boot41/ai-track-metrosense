@@ -19,7 +19,9 @@ class ArtifactPayload(BaseModel):
 
     type: str
     title: str
-    source: str
+    source: str | None = None
+    columns: list[str] | None = None
+    rows: list[list[object]] | None = None
     description: str | None = None
 
 

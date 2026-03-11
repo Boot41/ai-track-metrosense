@@ -39,7 +39,13 @@ LOGISTICS_KEYWORDS = {
     "orr",
     "hosur",
 }
-SCORECARD_KEYWORDS = {"risk", "scorecard", "vulnerability", "assessment", "how vulnerable is"}
+SCORECARD_KEYWORDS = {
+    "risk",
+    "scorecard",
+    "vulnerability",
+    "assessment",
+    "how vulnerable is",
+}
 GREETING_PHRASES = {
     "hi",
     "hello",
@@ -114,17 +120,24 @@ def is_greeting_only(message: str) -> bool:
         return True
 
     # If query intent words exist, this is not greeting-only.
-    if _matches_any(normalized, FLOOD_KEYWORDS | HEAT_KEYWORDS | INFRA_KEYWORDS | LOGISTICS_KEYWORDS):
+    if _matches_any(
+        normalized, FLOOD_KEYWORDS | HEAT_KEYWORDS | INFRA_KEYWORDS | LOGISTICS_KEYWORDS
+    ):
         return False
     if _matches_any(normalized, SCORECARD_KEYWORDS):
         return False
 
     tokens = set(normalized.split())
-    contains_greeting_token = any(token in GREETING_ALLOWED_TOKENS for token in tokens) and (
+    contains_greeting_token = any(
+        token in GREETING_ALLOWED_TOKENS for token in tokens
+    ) and (
         "hi" in tokens
         or "hello" in tokens
         or "hey" in tokens
         or "namaste" in tokens
-        or ("good" in tokens and ("morning" in tokens or "afternoon" in tokens or "evening" in tokens))
+        or (
+            "good" in tokens
+            and ("morning" in tokens or "afternoon" in tokens or "evening" in tokens)
+        )
     )
     return contains_greeting_token and tokens.issubset(GREETING_ALLOWED_TOKENS)

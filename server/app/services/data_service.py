@@ -88,6 +88,10 @@ async def _resolve_zone_id(session: AsyncSession, location_id: str) -> str:
     return _NEIGHBORHOOD_ZONE_MAP.get(canonical or "", location_id)
 
 
+async def resolve_zone_id(session: AsyncSession, location_id: str) -> str:
+    return await _resolve_zone_id(session, location_id)
+
+
 async def _resolve_ward_id(session: AsyncSession, location_id: str) -> str:
     """Resolve a neighbourhood name or plain location_id to its ward_id.
 
@@ -108,6 +112,10 @@ async def _resolve_ward_id(session: AsyncSession, location_id: str) -> str:
     )
     ward: str | None = (await session.execute(stmt)).scalar()
     return ward if ward else location_id
+
+
+async def resolve_ward_id(session: AsyncSession, location_id: str) -> str:
+    return await _resolve_ward_id(session, location_id)
 
 
 async def _dataset_anchor(session: AsyncSession, ts_col: Any) -> datetime:

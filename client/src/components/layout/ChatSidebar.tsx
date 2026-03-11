@@ -37,7 +37,9 @@ export default function ChatSidebar({
         backgroundColor: "#F7F9FC",
         display: "flex",
         flexDirection: "column",
-        height: "100%",
+        height: "100vh",
+        overflow: "hidden",
+        flexShrink: 0,
       }}
     >
       <Box sx={{ p: 2, borderBottom: "1px solid #D1DBE8" }}>
@@ -50,7 +52,7 @@ export default function ChatSidebar({
           PREVIOUS CHATS
         </Typography>
       </Box>
-      <List dense sx={{ px: 1, py: 0, overflowY: "auto", flex: 1 }}>
+      <List dense sx={{ px: 1, py: 0, overflowY: "auto", flex: 1, minHeight: 0 }}>
         {sessions.map((session) => (
           <ListItemButton
             key={session.session_id}

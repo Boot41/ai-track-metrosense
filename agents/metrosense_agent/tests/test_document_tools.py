@@ -4,11 +4,16 @@ from pathlib import Path
 
 import pytest
 
-from metrosense_agent.tools.shared.document_tools import fetch_document_section, list_document_indexes
+from metrosense_agent.tools.shared.document_tools import (
+    fetch_document_section,
+    list_document_indexes,
+)
 
 
 @pytest.mark.asyncio
-async def test_list_document_indexes_missing_path(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_list_document_indexes_missing_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.delenv("DOCUMENTS_PATH", raising=False)
     result = await list_document_indexes()
     assert result == []
@@ -19,7 +24,9 @@ async def test_list_document_indexes_filters(monkeypatch: pytest.MonkeyPatch) ->
     docs_path = Path(__file__).resolve().parents[3] / "server" / "Documents_Metrosense"
     monkeypatch.setenv("DOCUMENTS_PATH", str(docs_path))
 
-    result = await list_document_indexes(document_type="drainage_plan", ward_name="Bellandur")
+    result = await list_document_indexes(
+        document_type="drainage_plan", ward_name="Bellandur"
+    )
     assert isinstance(result, list)
     assert len(result) >= 1
 

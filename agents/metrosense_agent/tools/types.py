@@ -19,11 +19,12 @@ class ToolMeta(TypedDict):
     source: Literal["backend", "filesystem"]
     error_code: ErrorCode | None
     error_detail: str | None
-    # Always present on successful backend responses.
-    # Format: "MetroSense 2023 dataset. Most recent record: <observed_at>."
-    # Agents MUST copy this verbatim into data_freshness and prefix responses
-    # with it so users know the data is historical, not live.
     dataset_note: str | None
+    available_from: str | None
+    available_to: str | None
+    last_updated_at: str | None
+    record_count_returned: int | None
+    resolved_location: dict[str, Any] | None
 
 
 class ToolResult(TypedDict):
@@ -35,6 +36,11 @@ def success_result(
     data: Any,
     source: Literal["backend", "filesystem"],
     dataset_note: str | None = None,
+    available_from: str | None = None,
+    available_to: str | None = None,
+    last_updated_at: str | None = None,
+    record_count_returned: int | None = None,
+    resolved_location: dict[str, Any] | None = None,
 ) -> ToolResult:
     return {
         "data": data,
@@ -44,6 +50,11 @@ def success_result(
             "error_code": None,
             "error_detail": None,
             "dataset_note": dataset_note,
+            "available_from": available_from,
+            "available_to": available_to,
+            "last_updated_at": last_updated_at,
+            "record_count_returned": record_count_returned,
+            "resolved_location": resolved_location,
         },
     }
 
@@ -62,5 +73,10 @@ def failure_result(
             "error_code": error_code,
             "error_detail": error_detail,
             "dataset_note": None,
+            "available_from": None,
+            "available_to": None,
+            "last_updated_at": None,
+            "record_count_returned": None,
+            "resolved_location": None,
         },
     }

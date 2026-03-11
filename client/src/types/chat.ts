@@ -35,12 +35,22 @@ export interface RiskCardPayload {
   barricade_recommendations?: BarricadeRecommendation[];
 }
 
-export interface ArtifactPayload {
+export interface HtmlArtifactPayload {
   type: "html";
   title: string;
   source: string;
   description?: string;
 }
+
+export interface TableArtifactPayload {
+  type: "table";
+  title: string;
+  columns: string[];
+  rows: Array<Array<string | number | null>>;
+  description?: string;
+}
+
+export type ArtifactPayload = HtmlArtifactPayload | TableArtifactPayload;
 
 export interface ChatResponse {
   /** Primary response text (canonical field). */

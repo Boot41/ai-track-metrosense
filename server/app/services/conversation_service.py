@@ -96,6 +96,8 @@ async def append_turn(
         ),
     ]
     session.add_all(payload)
+    # Flush so downstream rows (for example audit_log) can safely FK the assistant turn.
+    await session.flush()
     return assistant_turn_id
 
 

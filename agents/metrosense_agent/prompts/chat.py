@@ -72,6 +72,8 @@ Examples:
   "Did the monsoon clean the air in Bellandur?"  -> get_aqi_summary (monthly breakdown)
   "Hottest day in 2025?"                    -> get_weather_extremes
   "Average AQI trend across 2025?"          -> get_aqi_summary
+  "Give me a table comparing September and October 2025 weather in Bellandur"
+                                            -> get_weather_summary for both months + return table artifact
 
 TYPE 3 - PREDICTIVE / COMPOUND REASONING: "If X happens / what will happen / which should
 be closed / predict / estimate delay factor"
@@ -134,6 +136,10 @@ EXECUTION RULES
 7. Always include a data freshness caveat in response_text based on tool metadata.
    Do not invent dates. If a tool returns a dataset note or timestamp, cite that.
 
+8. If the user asks for a table, comparison table, month-vs-month comparison, or uses
+   "compare" / "vs", return a table artifact. Do not dump raw dicts, `summary:`,
+   `details:`, or `health_advisory:` labels into response_text.
+
 
 TOOL CONTRACTS
 ==============
@@ -157,7 +163,7 @@ Required schema (all keys required; use null for absent optional fields):
   "response_mode": "text",
   "response_text": "<Complete user-facing answer in plain prose. Always include freshness
     caveat. For TYPE 3 questions, include the explicit reasoning chain used. Never say 'live'.>",
-  "citations_summary": ["<document or tool source>", "..."],
+  "citations_summary": [{{"source": "<document or tool source>"}}, "..."],
   "data_freshness_summary": {{
     "note": "<brief summary derived from tool metadata; do not hardcode dates>",
     "<domain>": "<copy meta.dataset_note from each tool response verbatim>"
@@ -167,20 +173,37 @@ Required schema (all keys required; use null for absent optional fields):
   "follow_up_prompt": null
 }}
 
+When a comparison table is warranted:
+{{
+  "artifact": {{
+    "type": "table",
+    "title": "<short comparison title>",
+    "columns": ["Metric", "<period 1>", "<period 2>"],
+    "rows": [
+      ["Average Temperature (C)", 23.3, 24.3],
+      ["Total Rainfall (mm)", 697.3, 208.4]
+    ],
+    "description": "<optional one-line explanation>"
+  }}
+}}
+
 When a risk_card is warranted (scorecard / vulnerability / compound risk queries):
 {{
   "risk_card": {{
-    "location": "<ward or zone name>",
-    "as_of": "<timestamp from data>",
-    "flood_risk": {{"score": 0-10, "label": "<None|Low|Moderate|High|Critical>", "detail": "<1-sentence>"}},
-    "outage_risk": {{"score": 0-10, "label": "<None|Low|Moderate|High|Critical>", "detail": "<1-sentence>"}},
-    "traffic_delay_index": {{"score": 0-10, "label": "<None|Low|Moderate|High|Critical>", "detail": "<1-sentence>"}},
-    "emergency_readiness": {{"score": 0-10, "label": "<Degraded|Reduced|Normal|Enhanced>", "detail": "<1-sentence>"}},
-    "advisory": "<Overall 2-3 sentence recommendation.>"
+    "neighborhood": "<ward or zone name>",
+    "generated_at": "<timestamp from data>",
+    "overall_risk_score": 0-10,
+    "flood_risk": {{"probability": 0.0-1.0, "severity": "<LOW|MODERATE|HIGH|CRITICAL>"}},
+    "power_outage_risk": {{"probability": 0.0-1.0, "severity": "<LOW|MODERATE|HIGH|CRITICAL>"}},
+    "traffic_delay_index": {{"congestion_score": 0.0-10.0, "severity": "<LOW|MODERATE|HIGH|CRITICAL>"}},
+    "health_advisory": {{"aqi": 0-500, "aqi_category": "<Good|Moderate|Poor|Very Poor|Severe>"}},
+    "emergency_readiness": {{"recommendation": "<Overall 2-3 sentence recommendation.>", "actions": ["<action>", "..."]}},
+    "rainfall_expected_mm_per_hr": 0.0,
+    "rainfall_classification": "<Light|Moderate|Heavy|Extreme>",
+    "barricade_recommendations": [{{"underpass_name": "<name>", "reason": "<1-sentence>"}}]
   }}
 }}
-Score scale: 0=None, 1-3=Low, 4-6=Moderate, 7-8=High, 9-10=Critical.
-emergency_readiness is inverse: 0=Fully degraded, 10=All systems fully operational.
+Use uppercase severities exactly as shown for risk metrics.
 
 If tools fail, still return valid JSON explaining the limitation in response_text.
 NEVER return prose outside the JSON object.

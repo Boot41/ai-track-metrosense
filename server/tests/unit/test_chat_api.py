@@ -3,12 +3,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
-from httpx import AsyncClient
-
 from app.api.deps import require_user
 from app.db.models import User
 from app.main import app
 from app.services import agent_proxy, conversation_service
+from httpx import AsyncClient
 
 
 @pytest.fixture
@@ -83,8 +82,54 @@ async def test_chat_returns_json_payload(
             "type": "html",
             "title": "Rainfall Trend",
             "source": "<div>chart</div>",
+            "columns": None,
+            "rows": None,
             "description": None,
         },
+    }
+
+
+@pytest.mark.asyncio
+async def test_chat_accepts_table_artifact_payload(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch, auth_override: None
+) -> None:
+    async def _fake_chat_response(**_: object) -> dict[str, object]:
+        return {
+            "session_id": "test-session",
+            "response_mode": "text",
+            "response_text": "Comparison ready.",
+            "citations_summary": [],
+            "data_freshness_summary": {},
+            "follow_up_prompt": None,
+            "message": "Comparison ready.",
+            "risk_card": None,
+            "artifact": {
+                "type": "table",
+                "title": "Bellandur Weather Comparison",
+                "columns": ["Metric", "September 2025", "October 2025"],
+                "rows": [["Avg Temperature (C)", 23.3, 24.3]],
+                "description": "Monthly comparison",
+            },
+        }
+
+    monkeypatch.setattr(agent_proxy, "get_chat_response", _fake_chat_response)
+
+    response = await client.post(
+        "/api/chat",
+        json={
+            "session_id": "test-session",
+            "message": "Compare Bellandur weather in September and October 2025 in a table",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["artifact"] == {
+        "type": "table",
+        "title": "Bellandur Weather Comparison",
+        "source": None,
+        "columns": ["Metric", "September 2025", "October 2025"],
+        "rows": [["Avg Temperature (C)", 23.3, 24.3]],
+        "description": "Monthly comparison",
     }
 
 

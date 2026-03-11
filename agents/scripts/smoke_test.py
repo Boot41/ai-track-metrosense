@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import sys
 
 import httpx
 
@@ -37,4 +36,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

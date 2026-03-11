@@ -3,12 +3,11 @@ from __future__ import annotations
 from collections.abc import Generator
 
 import pytest
-from httpx import AsyncClient
-
 from app.api.deps import db_session, settings
 from app.core.config import Settings
 from app.main import app
 from app.services import data_service
+from httpx import AsyncClient
 
 
 @pytest.fixture
@@ -41,7 +40,11 @@ async def test_internal_weather_current_returns_payload(
     async def _fake_weather_current(*_: object, **__: object) -> list[dict[str, str]]:
         return [{"observation_id": "wx-1", "location_id": "zone_north"}]
 
+    async def _fake_weather_current_zone(*_: object, **__: object) -> str:
+        return "zone_north"
+
     monkeypatch.setattr(data_service, "get_weather_current", _fake_weather_current)
+    monkeypatch.setattr(data_service, "resolve_zone_id", _fake_weather_current_zone)
 
     response = await client.get(
         "/internal/weather/current",
@@ -50,7 +53,12 @@ async def test_internal_weather_current_returns_payload(
     )
 
     assert response.status_code == 200
-    assert response.json() == [{"observation_id": "wx-1", "location_id": "zone_north"}]
+    payload = response.json()
+    assert payload["data"] == [{"observation_id": "wx-1", "location_id": "zone_north"}]
+    assert payload["meta"]["ok"] is True
+    assert payload["meta"]["domain"] == "weather_current"
+    assert payload["meta"]["record_count_returned"] == 1
+    assert payload["meta"]["resolved_location"]["zone_id"] == "zone_north"
 
 
 @pytest.mark.asyncio

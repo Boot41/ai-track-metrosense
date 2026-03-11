@@ -12,6 +12,7 @@ import type {
 } from "@/types/chat";
 
 const HEALTH_POLL_MS = 30_000;
+const ACTIVE_SESSION_STORAGE_KEY = "metrosense_active_session_id";
 const PROMPTS = [
   "If it rains 60mm tonight, which underpasses should be barricaded?",
   "How does current humidity compare to pre-monsoon averages of the last decade?",
@@ -32,6 +33,24 @@ function createMessage(partial: Omit<Message, "id" | "timestamp">): Message {
     timestamp: new Date(),
     ...partial,
   };
+}
+
+function readActiveSessionId(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return window.localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+}
+
+function writeActiveSessionId(sessionId: string | null): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  if (sessionId) {
+    window.localStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, sessionId);
+    return;
+  }
+  window.localStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY);
 }
 
 function extractError(error: unknown): AppError {
@@ -85,6 +104,7 @@ export function useChat(): UseChatResult {
   const [mode, setMode] = useState<"live" | "history_readonly">("live");
   const [selectedHistorySessionId, setSelectedHistorySessionId] = useState<string | null>(null);
   const sessionIdRef = useRef<string>(createSessionId());
+  const didAttemptRestoreRef = useRef(false);
 
   const refreshHealth = useCallback(async () => {
     try {
@@ -123,22 +143,51 @@ export function useChat(): UseChatResult {
     setMessages([]);
     setInput("");
     setError(null);
+    writeActiveSessionId(null);
   }, []);
 
+  const hydrateSession = useCallback(
+    async (sessionId: string, nextMode: "live" | "history_readonly") => {
+      setError(null);
+      setIsHistoryLoading(true);
+      try {
+        const transcript = await getChatSession(sessionId);
+        setMessages(transcript.messages.map(fromTranscriptMessage));
+        sessionIdRef.current = transcript.session_id;
+        setSelectedHistorySessionId(transcript.session_id);
+        setMode(nextMode);
+        if (nextMode === "live") {
+          writeActiveSessionId(transcript.session_id);
+        }
+      } catch (caughtError) {
+        setError(extractError(caughtError));
+      } finally {
+        setIsHistoryLoading(false);
+      }
+    },
+    [],
+  );
+
   const loadHistorySession = useCallback(async (sessionId: string) => {
-    setError(null);
-    setIsHistoryLoading(true);
-    try {
-      const transcript = await getChatSession(sessionId);
-      setMessages(transcript.messages.map(fromTranscriptMessage));
-      setMode("history_readonly");
-      setSelectedHistorySessionId(transcript.session_id);
-    } catch (caughtError) {
-      setError(extractError(caughtError));
-    } finally {
-      setIsHistoryLoading(false);
+    await hydrateSession(sessionId, "history_readonly");
+  }, [hydrateSession]);
+
+  useEffect(() => {
+    if (didAttemptRestoreRef.current || sessions.length === 0) {
+      return;
     }
-  }, []);
+    didAttemptRestoreRef.current = true;
+    const storedSessionId = readActiveSessionId();
+    if (!storedSessionId) {
+      return;
+    }
+    const knownSession = sessions.find((item) => item.session_id === storedSessionId);
+    if (!knownSession) {
+      writeActiveSessionId(null);
+      return;
+    }
+    void hydrateSession(storedSessionId, "live");
+  }, [hydrateSession, sessions]);
 
   const sendMessage = useCallback(
     async (value?: string) => {
@@ -149,6 +198,7 @@ export function useChat(): UseChatResult {
 
       setError(null);
       setIsSending(true);
+      setSelectedHistorySessionId(sessionIdRef.current);
       setMessages((current) => [
         ...current,
         createMessage({ role: "user", content: messageText }),
@@ -170,6 +220,7 @@ export function useChat(): UseChatResult {
           followUpPrompt: response.follow_up_prompt ?? undefined,
         });
 
+        writeActiveSessionId(sessionIdRef.current);
         setMessages((current) => [...current, assistantMessage]);
         await refreshSessions();
       } catch (caughtError) {

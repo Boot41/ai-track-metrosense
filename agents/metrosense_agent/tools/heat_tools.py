@@ -5,11 +5,15 @@ from .types import ToolResult
 
 
 async def get_aqi_current(location_id: str, limit: int = 1) -> ToolResult:
-    return await backend_get("/internal/aqi/current", {"location_id": location_id, "limit": limit})
+    return await backend_get(
+        "/internal/aqi/current", {"location_id": location_id, "limit": limit}
+    )
 
 
 async def get_aqi_historical(location_id: str, days: int = 365) -> ToolResult:
-    return await backend_get("/internal/aqi/historical", {"location_id": location_id, "days": days})
+    return await backend_get(
+        "/internal/aqi/historical", {"location_id": location_id, "days": days}
+    )
 
 
 async def get_aqi_summary(location_id: str) -> ToolResult:

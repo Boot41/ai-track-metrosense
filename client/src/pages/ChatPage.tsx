@@ -26,8 +26,8 @@ export default function ChatPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex" }}>
-      <Box sx={{ display: { xs: "none", md: "block" } }}>
+    <Box sx={{ height: "100vh", display: "flex", overflow: "hidden" }}>
+      <Box sx={{ display: { xs: "none", md: "flex" }, flexShrink: 0 }}>
         <ChatSidebar
           sessions={sessions}
           selectedSessionId={selectedHistorySessionId}
@@ -57,14 +57,23 @@ export default function ChatPage() {
         />
       </Drawer>
 
-      <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", flex: 1 }}>
+      <Box
+        sx={{
+          height: "100vh",
+          minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          overflow: "hidden",
+        }}
+      >
         <Header
           agentStatus={agentStatus}
           sessionId={sessionId}
           onOpenSidebar={() => setMobileSidebarOpen(true)}
         />
         {isHistoryLoading ? (
-          <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
+          <Box sx={{ flex: 1, minHeight: 0, display: "grid", placeItems: "center" }}>
             <CircularProgress />
           </Box>
         ) : (

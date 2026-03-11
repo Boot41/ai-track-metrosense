@@ -30,7 +30,11 @@ def _contains_thresholds(index_doc: dict[str, Any]) -> bool:
     toc = index_doc.get("table_of_contents", [])
     if not isinstance(toc, list):
         return False
-    return any(bool(section.get("contains_thresholds")) for section in toc if isinstance(section, dict))
+    return any(
+        bool(section.get("contains_thresholds"))
+        for section in toc
+        if isinstance(section, dict)
+    )
 
 
 async def list_document_indexes(
@@ -49,7 +53,10 @@ async def list_document_indexes(
     requested_type = (document_type or "").strip().lower()
 
     for idx in indexes:
-        if requested_type and str(idx.get("document_type", "")).lower() != requested_type:
+        if (
+            requested_type
+            and str(idx.get("document_type", "")).lower() != requested_type
+        ):
             continue
 
         if ward_lookup:
@@ -59,7 +66,10 @@ async def list_document_indexes(
             if ward_lookup not in {str(ward).strip().lower() for ward in wards}:
                 continue
 
-        if contains_thresholds is not None and _contains_thresholds(idx) != contains_thresholds:
+        if (
+            contains_thresholds is not None
+            and _contains_thresholds(idx) != contains_thresholds
+        ):
             continue
 
         filtered.append(idx)
@@ -67,7 +77,9 @@ async def list_document_indexes(
     return filtered
 
 
-async def fetch_document_section(document_id: str, section_id: str) -> dict[str, Any] | None:
+async def fetch_document_section(
+    document_id: str, section_id: str
+) -> dict[str, Any] | None:
     base_path = _documents_path()
     if base_path is None or not base_path.exists() or not base_path.is_dir():
         return None
