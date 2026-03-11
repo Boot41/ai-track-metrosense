@@ -158,6 +158,35 @@ def test_parse_level2_payload_converts_top_level_comparison_table_json_to_table(
     }
 
 
+def test_parse_level2_payload_converts_named_table_blob_to_table() -> None:
+    payload = agent_proxy._parse_level2_payload(
+        "summary: Here's a comparison of weather conditions in Bellandur for September and "
+        "October 2025. details: {'Bellandur Weather Comparison (September vs. October 2025)': "
+        "[{'Month': 'September 2025', 'Average Temperature (°C)': 23.3, "
+        "'Maximum Temperature (°C)': 31.5, 'Minimum Temperature (°C)': 15.1, "
+        "'Average Humidity (%)': 89.0, 'Total Rainfall (mm)': 697.3}, "
+        "{'Month': 'October 2025', 'Average Temperature (°C)': 24.3, "
+        "'Maximum Temperature (°C)': 32.2, 'Minimum Temperature (°C)': 14.0, "
+        "'Average Humidity (%)': 78.2, 'Total Rainfall (mm)': 208.4}]}. "
+        "health_advisory: Stay hydrated.",
+        session_id="test-session",
+    )
+
+    assert payload["artifact"] == {
+        "type": "table",
+        "title": "Bellandur Weather Comparison (September vs. October 2025)",
+        "columns": ["Metric", "September 2025", "October 2025"],
+        "rows": [
+            ["Average Temperature (°C)", 23.3, 24.3],
+            ["Maximum Temperature (°C)", 31.5, 32.2],
+            ["Minimum Temperature (°C)", 15.1, 14.0],
+            ["Average Humidity (%)", 89.0, 78.2],
+            ["Total Rainfall (mm)", 697.3, 208.4],
+        ],
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
+
+
 class _FakeResponse:
     def __init__(
         self,

@@ -304,6 +304,45 @@ def _build_table_artifact_from_month_blocks(
     }
 
 
+def _build_table_artifact_from_row_dicts(
+    rows_data: list[dict[str, Any]], title: str
+) -> dict[str, Any] | None:
+    if len(rows_data) < 2:
+        return None
+
+    row_label_key = next(
+        (key for key in ("Month", "month", "Location", "location") if key in rows_data[0]),
+        None,
+    )
+    if row_label_key is None:
+        return None
+
+    columns = ["Metric"] + [
+        str(row.get(row_label_key, f"Period {index + 1}")) for index, row in enumerate(rows_data)
+    ]
+    metric_keys: list[str] = []
+    for row in rows_data:
+        for key in row.keys():
+            if key == row_label_key or key in metric_keys:
+                continue
+            metric_keys.append(key)
+
+    rows: list[list[Any]] = []
+    for metric_key in metric_keys:
+        row: list[Any] = [metric_key]
+        for row_data in rows_data:
+            row.append(_format_table_value(row_data.get(metric_key)))
+        rows.append(row)
+
+    return {
+        "type": "table",
+        "title": title,
+        "columns": columns,
+        "rows": rows,
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
+
+
 def _build_table_artifact_from_details(
     details: dict[str, Any], title: str
 ) -> dict[str, Any] | None:
@@ -315,6 +354,15 @@ def _build_table_artifact_from_details(
         )
         if artifact is not None:
             return artifact
+
+    for detail_key, detail_value in details.items():
+        if isinstance(detail_key, str) and isinstance(detail_value, list):
+            artifact = _build_table_artifact_from_row_dicts(
+                [item for item in detail_value if isinstance(item, dict)],
+                title=detail_key,
+            )
+            if artifact is not None:
+                return artifact
 
     comparison = details.get("comparison")
     month_blocks = [

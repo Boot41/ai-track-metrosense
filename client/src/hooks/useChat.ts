@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AxiosError } from "axios";
+import { useAuth } from "@/auth/AuthContext";
 import { getChatSession, getChatSessions, getHealth, postChat } from "@/lib/api";
 import type {
   AgentStatus,
@@ -94,6 +95,7 @@ function fromTranscriptMessage(message: ChatTranscriptMessage): Message {
 }
 
 export function useChat(): UseChatResult {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -128,13 +130,26 @@ export function useChat(): UseChatResult {
       const response = await getChatSessions();
       setSessions(response.sessions);
     } catch {
-      // Keep chat usable if history fetch fails.
+      setSessions([]);
     }
   }, []);
 
   useEffect(() => {
+    if (!user) {
+      setMessages([]);
+      setInput("");
+      setError(null);
+      setSessions([]);
+      setMode("live");
+      setSelectedHistorySessionId(null);
+      sessionIdRef.current = createSessionId();
+      didAttemptRestoreRef.current = false;
+      return;
+    }
+
+    didAttemptRestoreRef.current = false;
     void refreshSessions();
-  }, [refreshSessions]);
+  }, [refreshSessions, user]);
 
   const createNewChat = useCallback(() => {
     setMode("live");
@@ -173,7 +188,7 @@ export function useChat(): UseChatResult {
   }, [hydrateSession]);
 
   useEffect(() => {
-    if (didAttemptRestoreRef.current || sessions.length === 0) {
+    if (!user || didAttemptRestoreRef.current || sessions.length === 0) {
       return;
     }
     didAttemptRestoreRef.current = true;
@@ -187,7 +202,7 @@ export function useChat(): UseChatResult {
       return;
     }
     void hydrateSession(storedSessionId, "live");
-  }, [hydrateSession, sessions]);
+  }, [hydrateSession, sessions, user]);
 
   const sendMessage = useCallback(
     async (value?: string) => {
