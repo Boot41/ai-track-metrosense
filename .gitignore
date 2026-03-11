@@ -19,3 +19,6 @@ export_session_md.py
 .codex/skills/
 .agents/skills/
 skills-lock.json
+
+server/DataSet_MetroSense
+server/Documents_Metrosense
