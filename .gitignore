@@ -14,3 +14,8 @@ htmlcov/
 .coverage
 
 export_session_md.py
+
+# Local Codex/agent skills (user-specific)
+.codex/skills/
+.agents/skills/
+skills-lock.json
