@@ -22,6 +22,20 @@ def _auth_headers(settings: Settings) -> dict[str, str]:
     return {"X-Internal-Token": token}
 
 
+def _is_input_token_limit_error(exc: httpx.HTTPStatusError) -> bool:
+    response = exc.response
+    if response is None or response.status_code != 400:
+        return False
+    body = response.text.lower()
+    return "input token count exceeds the maximum number of tokens allowed" in body
+
+
+def _overflow_retry_session_id(session_id: str) -> str:
+    # Keep the id compact and deterministic enough for log correlation.
+    compact_base = session_id[:96]
+    return f"{compact_base}--retry-{int(time.time() * 1000)}"
+
+
 def _extract_message_from_events(events: list[dict[str, Any]]) -> str:
     for event in reversed(events):
         content = event.get("content")
@@ -44,6 +58,15 @@ def _extract_message_from_events(events: list[dict[str, Any]]) -> str:
 
 
 _FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)```", re.DOTALL)
+
+
+def _normalise_freshness(value: Any) -> dict[str, Any]:
+    """Ensure data_freshness_summary is always a dict for Pydantic validation."""
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str) and value.strip():
+        return {"note": value}
+    return {}
 
 
 def _strip_fences(text: str) -> str:
@@ -116,7 +139,9 @@ def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
             "response_mode": parsed.get("response_mode", "text"),
             "response_text": response_text,
             "citations_summary": parsed.get("citations_summary", []),
-            "data_freshness_summary": parsed.get("data_freshness_summary", {}),
+            "data_freshness_summary": _normalise_freshness(
+                parsed.get("data_freshness_summary")
+            ),
             "risk_card": parsed.get("risk_card"),
             "artifact": parsed.get("artifact"),
             "follow_up_prompt": parsed.get("follow_up_prompt"),
@@ -133,7 +158,9 @@ def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
                 "response_mode": "text",
                 "response_text": synthesized,
                 "citations_summary": parsed.get("citations", []),
-                "data_freshness_summary": parsed.get("data_freshness", {}),
+                "data_freshness_summary": _normalise_freshness(
+                    parsed.get("data_freshness")
+                ),
                 "risk_card": None,
                 "artifact": None,
                 "follow_up_prompt": None,
@@ -161,6 +188,41 @@ async def _ensure_session(
     response.raise_for_status()
 
 
+async def _run_agent_once(
+    client: httpx.AsyncClient,
+    base_url: str,
+    app_name: str,
+    user_id: str,
+    session_id: str,
+    message: str,
+    headers: dict[str, str],
+) -> list[dict[str, Any]]:
+    await _ensure_session(
+        client=client,
+        base_url=base_url,
+        app_name=app_name,
+        user_id=user_id,
+        session_id=session_id,
+        headers=headers,
+    )
+    response = await client.post(
+        f"{base_url}/run",
+        headers=headers,
+        json={
+            "appName": app_name,
+            "userId": user_id,
+            "sessionId": session_id,
+            "newMessage": {"role": "user", "parts": [{"text": message}]},
+            "streaming": False,
+        },
+    )
+    response.raise_for_status()
+    events = response.json()
+    if not isinstance(events, list):
+        raise ValueError("Agent response must be a list of events")
+    return events
+
+
 async def get_chat_response(
     settings: Settings,
     db_session: AsyncSession,
@@ -173,30 +235,34 @@ async def get_chat_response(
         base_url = settings.agent_server_url.rstrip("/")
         app_name = settings.agent_app_name
         user_id = "metrosense"
-        await _ensure_session(
-            client=client,
-            base_url=base_url,
-            app_name=app_name,
-            user_id=user_id,
-            session_id=session_id,
-            headers=headers,
-        )
-        response = await client.post(
-            f"{base_url}/run",
-            headers=headers,
-            json={
-                "appName": app_name,
-                "userId": user_id,
-                "sessionId": session_id,
-                "newMessage": {"role": "user", "parts": [{"text": message}]},
-                "streaming": False,
-            },
-        )
-        response.raise_for_status()
-        events = response.json()
-
-    if not isinstance(events, list):
-        raise ValueError("Agent response must be a list of events")
+        try:
+            events = await _run_agent_once(
+                client=client,
+                base_url=base_url,
+                app_name=app_name,
+                user_id=user_id,
+                session_id=session_id,
+                message=message,
+                headers=headers,
+            )
+        except httpx.HTTPStatusError as exc:
+            if not _is_input_token_limit_error(exc):
+                raise
+            retry_session_id = _overflow_retry_session_id(session_id)
+            logger.warning(
+                "Agent token limit exceeded for session_id={}; retrying once with adk_session_id={}",
+                session_id,
+                retry_session_id,
+            )
+            events = await _run_agent_once(
+                client=client,
+                base_url=base_url,
+                app_name=app_name,
+                user_id=user_id,
+                session_id=retry_session_id,
+                message=message,
+                headers=headers,
+            )
 
     message_text = _extract_message_from_events(events)
     response_payload = _parse_level2_payload(message_text, session_id=session_id)

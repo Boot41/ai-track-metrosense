@@ -73,6 +73,9 @@ async def test_chat_returns_json_payload(
             "traffic_delay_index": None,
             "health_advisory": None,
             "emergency_readiness": None,
+            "rainfall_expected_mm_per_hr": None,
+            "rainfall_classification": None,
+            "barricade_recommendations": None,
         },
         "artifact": {
             "type": "html",

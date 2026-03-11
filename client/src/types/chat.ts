@@ -16,6 +16,11 @@ export interface EmergencyReadiness {
   actions?: string[];
 }
 
+export interface BarricadeRecommendation {
+  underpass_name: string;
+  reason: string;
+}
+
 export interface RiskCardPayload {
   neighborhood: string;
   generated_at: string;
@@ -25,6 +30,9 @@ export interface RiskCardPayload {
   traffic_delay_index?: RiskMetric;
   health_advisory?: HealthAdvisory;
   emergency_readiness?: EmergencyReadiness;
+  rainfall_expected_mm_per_hr?: number;
+  rainfall_classification?: string;
+  barricade_recommendations?: BarricadeRecommendation[];
 }
 
 export interface ArtifactPayload {

@@ -44,6 +44,13 @@ class EmergencyReadiness(BaseModel):
     actions: list[str] | None = None
 
 
+class BarricadeRecommendation(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    underpass_name: str
+    reason: str
+
+
 class RiskCardPayload(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -55,6 +62,9 @@ class RiskCardPayload(BaseModel):
     traffic_delay_index: RiskMetric | None = None
     health_advisory: HealthAdvisory | None = None
     emergency_readiness: EmergencyReadiness | None = None
+    rainfall_expected_mm_per_hr: float | None = None
+    rainfall_classification: str | None = None
+    barricade_recommendations: list[BarricadeRecommendation] | None = None
 
 
 class ChatRequest(BaseModel):
