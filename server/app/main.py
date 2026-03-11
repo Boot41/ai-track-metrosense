@@ -26,7 +26,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 def create_app() -> FastAPI:
     setup_logging()
 
-    app = FastAPI(title="App Scaffold", version="1.0.0", lifespan=lifespan)
+    app = FastAPI(title="MetroSense", version="1.0.0", lifespan=lifespan)
     settings = get_settings()
 
     app.add_middleware(RequestLoggingMiddleware)

@@ -190,6 +190,10 @@ For the implemented Postgres schema + CSV loader for MetroSense golden data, see
 | GET | `/internal/ward/profile` | Token | Ward demographic/infrastructure profile (agent use only) |
 | GET | `/internal/locations` | Token | List all known locations (agent use only) |
 | GET | `/internal/locations/resolve` | Token | Resolve location name to canonical record (agent use only) |
+| GET | `/internal/aqi/summary` | Token | Monthly AQI aggregates per neighbourhood (agent use only) |
+| GET | `/internal/weather/summary` | Token | Monthly weather aggregates per zone (agent use only) |
+| GET | `/internal/weather/extremes` | Token | Top N extreme days ranked by temperature or rainfall (agent use only) |
+| DELETE | `/api/chat/{session_id}` | Yes | Clear chat session (placeholder — not yet implemented) |
 
 ## Environment Variables
 
@@ -199,13 +203,13 @@ For the implemented Postgres schema + CSV loader for MetroSense golden data, see
 |----------|---------|-------------||
 | `ENV` | `development` | development / test / production |
 | `DATABASE_URL` | `postgresql+asyncpg://postgres:postgres@localhost:5433/app_scaffold` | Database connection |
-| `JWT_SECRET` | `app-scaffold-dev-secret` | JWT signing secret |
+| `JWT_SECRET` | `change-me` | JWT signing secret (must be overridden in production — minimum 32 bytes) |
 | `JWT_ALGORITHM` | `HS256` | JWT algorithm |
 | `JWT_EXPIRES_MINUTES` | `60` | JWT expiration in minutes |
 | `AUTH_COOKIE_NAME` | `metrosense_token` | Auth cookie name |
 | `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Allowed origins for cookies |
 | `AGENT_INTERNAL_TOKEN` | *(required)* | Shared secret for backend-to-agent proxy authentication |
-| `AGENT_SERVER_URL` | `http://localhost:8020` | Internal URL for agents proxy |
+| `AGENT_SERVER_URL` | `http://agents:8020` | Internal URL for agents proxy (override to `http://localhost:8020` for local dev outside Docker) |
 
 ### Agents (agents/)
 
@@ -236,11 +240,14 @@ For the implemented Postgres schema + CSV loader for MetroSense golden data, see
 - **Data Loading:** 6 CSVs exist in `DataSet_MetroSense/` but are not yet seeded — run `scripts/load_metrosense_dataset.py --replace` once
 - **Structured Risk Card Population:** Schema and contract are end-to-end wired; agent logic needs real data to populate `risk_card` and `artifact` fields
 - **Message Context:** `ConversationHistory` is persisted but previous turns are not yet injected back into the agent session
+- **Frontend Structured Response Fields:** `ChatResponse` type only reads the backward-compat `message` field; `response_text`, `citations_summary`, `data_freshness_summary`, and `follow_up_prompt` are not yet surfaced in the UI
 - **Streaming:** Responses are buffered POST/response; SSE or WebSocket not yet implemented
 - **E2E Tests:** Playwright configuration exists but no test suites written yet
+- **AuditLog:** Model and table exist but are never written to
+- **Session Reset:** `DELETE /api/chat/{session_id}` endpoint is a no-op placeholder
 
 ### Next Steps
-See **Next Steps (Recommended Order)** in [AGENTS.md](AGENTS.md#next-steps-recommended-order) for the development roadmap.
+See **Next Steps (Recommended Order)** in [AGENTS.md](AGENTS.md#next-steps-recommended-order) and the full gap/bug inventory in [AUDIT.md](AUDIT.md) for the development roadmap.
 
 ## Docker
 

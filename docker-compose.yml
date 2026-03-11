@@ -18,6 +18,7 @@ services:
       ENV: development
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/app_scaffold
       AGENT_INTERNAL_TOKEN: ${AGENT_INTERNAL_TOKEN}
+      AGENT_SERVER_URL: http://agents:8020
     ports:
       - "8000:8000"
     depends_on:
@@ -34,10 +35,14 @@ services:
     environment:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       GOOGLE_GENAI_USE_VERTEXAI: ${GOOGLE_GENAI_USE_VERTEXAI:-false}
-      AGENT_MODEL: ${AGENT_MODEL:-gemini-2.0-flash}
+      AGENT_MODEL: ${AGENT_MODEL:-gemini-2.5-flash}
       AGENT_INTERNAL_TOKEN: ${AGENT_INTERNAL_TOKEN}
+      BACKEND_INTERNAL_URL: http://api:8000
+      DOCUMENTS_PATH: /app/Documents_Metrosense
+      ADK_BASE_URL: http://127.0.0.1:8021
     ports:
       - "8020:8020"
+      - "8021:8021"
 
 volumes:
   postgres_data:

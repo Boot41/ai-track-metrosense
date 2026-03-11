@@ -1,4 +1,4 @@
-# UrbanClimate AI — Agents & ADK Reference
+# MetroSense — Agents & ADK Reference
 ### Agent Design, Session, Context, Tools, Evals
 ---
 
@@ -68,12 +68,12 @@ Chat Agent  ← only agent the user ever talks to
 
 ### Sub-Agent Future-Proofing
 
-Sub-agents are not used in v1 for simplicity. The signals to introduce them later:
+Sub-agents are fully implemented for v1: `flood_vulnerability_agent`, `heat_health_agent`, `infrastructure_agent`, and `logistics_agent` are all wired under `chat_agent`. The signals to split further (e.g. per-domain sub-sub-agents) are:
 - Any domain agent tool count exceeds 10-12 and LLM tool selection degrades
 - Any agent file exceeds ~300-400 lines
 - Tool logic is being copy-pasted across two domain agents
 
-Tool files are pre-partitioned by concern inside each agent folder so splitting is a mechanical refactor when the time comes.
+Tool files are pre-partitioned by concern inside each agent folder so further splitting is a mechanical refactor when the time comes.
 
 ---
 

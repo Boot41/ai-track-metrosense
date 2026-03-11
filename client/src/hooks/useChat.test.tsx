@@ -15,6 +15,7 @@ describe("useChat", () => {
 
   it("appends user and assistant messages on success", async () => {
     vi.mocked(postChat).mockResolvedValue({
+      response_text: "Agent reply",
       message: "Agent reply",
       risk_card: null,
       artifact: null,

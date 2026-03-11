@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from .backend_client import _get
+from .backend_client import backend_get
 from .types import ToolResult
 
 
 async def get_aqi_current(location_id: str, limit: int = 1) -> ToolResult:
-    return await _get("/internal/aqi/current", {"location_id": location_id, "limit": limit})
+    return await backend_get("/internal/aqi/current", {"location_id": location_id, "limit": limit})
 
 
 async def get_aqi_historical(location_id: str, days: int = 365) -> ToolResult:
-    return await _get("/internal/aqi/historical", {"location_id": location_id, "days": days})
+    return await backend_get("/internal/aqi/historical", {"location_id": location_id, "days": days})
 
 
 async def get_aqi_summary(location_id: str) -> ToolResult:
@@ -22,8 +22,8 @@ async def get_aqi_summary(location_id: str) -> ToolResult:
         location_id: Neighbourhood name exactly as returned by resolve_location
                      (e.g. 'Bellandur', 'Whitefield', 'Koramangala').
     """
-    return await _get("/internal/aqi/summary", {"location_id": location_id})
+    return await backend_get("/internal/aqi/summary", {"location_id": location_id})
 
 
 async def get_ward_profile(ward_id: str) -> ToolResult:
-    return await _get("/internal/ward/profile", {"ward_id": ward_id})
+    return await backend_get("/internal/ward/profile", {"ward_id": ward_id})

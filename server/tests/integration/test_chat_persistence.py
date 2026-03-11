@@ -39,20 +39,26 @@ async def test_chat_persists_session_and_turn_history(
 
     row_count = (
         await db.execute(
-            select(func.count()).select_from(
+            select(func.count())
+            .select_from(
                 ConversationHistory,
-            ).where(ConversationHistory.session_id == session_id)
+            )
+            .where(ConversationHistory.session_id == session_id)
         )
     ).scalar_one()
     assert row_count == 4
 
     rows = (
-        await db.execute(
-            select(ConversationHistory)
-            .where(ConversationHistory.session_id == session_id)
-            .order_by(ConversationHistory.timestamp.asc())
+        (
+            await db.execute(
+                select(ConversationHistory)
+                .where(ConversationHistory.session_id == session_id)
+                .order_by(ConversationHistory.timestamp.asc())
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     user_rows = [row for row in rows if row.role == "user"]
     assistant_rows = [row for row in rows if row.role == "assistant"]

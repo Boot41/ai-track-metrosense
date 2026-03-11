@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
 import os
 import socket
 import threading
 import time
+from collections.abc import AsyncGenerator
 
 import pytest
+import uvicorn
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-import uvicorn
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,

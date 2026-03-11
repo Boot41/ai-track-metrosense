@@ -89,8 +89,6 @@ class ErrorPayload(BaseModel):
     message: str
 
 
-
-
 def _error_response(code: str, message: str, status_code: int) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,

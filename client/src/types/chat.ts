@@ -43,7 +43,14 @@ export interface ArtifactPayload {
 }
 
 export interface ChatResponse {
+  /** Primary response text (canonical field). */
+  response_text: string;
+  /** Backward-compatible alias of response_text. */
   message: string;
+  response_mode?: string;
+  citations_summary?: Array<Record<string, unknown>>;
+  data_freshness_summary?: Record<string, unknown>;
+  follow_up_prompt?: string | null;
   risk_card?: RiskCardPayload | null;
   artifact?: ArtifactPayload | null;
 }
@@ -71,5 +78,7 @@ export interface Message {
   timestamp: Date;
   riskCard?: RiskCardPayload;
   artifact?: ArtifactPayload;
+  dataFreshnessSummary?: Record<string, unknown>;
+  followUpPrompt?: string;
   isError?: boolean;
 }

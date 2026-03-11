@@ -53,7 +53,9 @@ async def signup(
         user = await auth_service.create_user(session, payload.email, payload.password)
     except ValueError as exc:
         if str(exc) == "EMAIL_IN_USE":
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use") from exc
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Email already in use"
+            ) from exc
         raise
 
     token = create_access_token(subject=str(user.id), settings=app_settings)

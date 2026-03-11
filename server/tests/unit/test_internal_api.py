@@ -17,8 +17,8 @@ def internal_overrides() -> Generator[None, None, None]:
         return object()
 
     app.dependency_overrides[db_session] = _db_override
-    app.dependency_overrides[settings] = (
-        lambda: Settings(agent_internal_token="test-internal-token")
+    app.dependency_overrides[settings] = lambda: Settings(
+        agent_internal_token="test-internal-token"
     )
     yield
     app.dependency_overrides.pop(db_session, None)

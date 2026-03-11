@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from ..backend_client import _get
+from ..backend_client import backend_get
 from ..types import ToolResult
 
 
 async def get_weather_current(location_id: str, limit: int = 1) -> ToolResult:
-    return await _get("/internal/weather/current", {"location_id": location_id, "limit": limit})
+    return await backend_get("/internal/weather/current", {"location_id": location_id, "limit": limit})
 
 
 async def get_weather_historical(location_id: str, hours: int = 720) -> ToolResult:
-    return await _get("/internal/weather/historical", {"location_id": location_id, "hours": hours})
+    return await backend_get("/internal/weather/historical", {"location_id": location_id, "hours": hours})
 
 
 async def get_weather_summary(location_id: str) -> ToolResult:
@@ -22,7 +22,7 @@ async def get_weather_summary(location_id: str) -> ToolResult:
         location_id: Neighbourhood name or zone id (e.g. 'Bellandur', 'zone_east').
                      The backend resolves neighbourhoods to zones automatically.
     """
-    return await _get("/internal/weather/summary", {"location_id": location_id})
+    return await backend_get("/internal/weather/summary", {"location_id": location_id})
 
 
 async def get_weather_extremes(
@@ -38,4 +38,4 @@ async def get_weather_extremes(
                 'rainfall_mm_24hour' for wettest days.
         top_n: How many top days to return (1-50). Default 10.
     """
-    return await _get("/internal/weather/extremes", {"metric": metric, "top_n": top_n})
+    return await backend_get("/internal/weather/extremes", {"metric": metric, "top_n": top_n})

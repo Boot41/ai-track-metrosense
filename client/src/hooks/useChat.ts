@@ -99,9 +99,11 @@ export function useChat(): UseChatResult {
 
         const assistantMessage = createMessage({
           role: "assistant",
-          content: response.message,
+          content: response.response_text ?? response.message,
           riskCard: response.risk_card ?? undefined,
           artifact: response.artifact ?? undefined,
+          dataFreshnessSummary: response.data_freshness_summary ?? undefined,
+          followUpPrompt: response.follow_up_prompt ?? undefined,
         });
 
         setMessages((current) => [...current, assistantMessage]);

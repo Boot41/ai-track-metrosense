@@ -4,12 +4,14 @@ import json
 import re
 import time
 from typing import Any
+from uuid import uuid4
 
 import httpx
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings
+from app.db.models import AuditLog
 from app.services import conversation_service
 
 CHAT_TIMEOUT_SECONDS = 600.0
@@ -139,9 +141,7 @@ def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
             "response_mode": parsed.get("response_mode", "text"),
             "response_text": response_text,
             "citations_summary": parsed.get("citations_summary", []),
-            "data_freshness_summary": _normalise_freshness(
-                parsed.get("data_freshness_summary")
-            ),
+            "data_freshness_summary": _normalise_freshness(parsed.get("data_freshness_summary")),
             "risk_card": parsed.get("risk_card"),
             "artifact": parsed.get("artifact"),
             "follow_up_prompt": parsed.get("follow_up_prompt"),
@@ -158,9 +158,7 @@ def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
                 "response_mode": "text",
                 "response_text": synthesized,
                 "citations_summary": parsed.get("citations", []),
-                "data_freshness_summary": _normalise_freshness(
-                    parsed.get("data_freshness")
-                ),
+                "data_freshness_summary": _normalise_freshness(parsed.get("data_freshness")),
                 "risk_card": None,
                 "artifact": None,
                 "follow_up_prompt": None,
@@ -270,13 +268,28 @@ async def get_chat_response(
 
     try:
         await conversation_service.upsert_session(db_session, session_id=session_id)
-        await conversation_service.append_turn(
+        assistant_turn_id = await conversation_service.append_turn(
             db_session,
             session_id=session_id,
             user_message=message,
             assistant_message=response_payload["response_text"],
             agents_invoked=[],
             latency_ms=latency_ms,
+        )
+        db_session.add(
+            AuditLog(
+                log_id=str(uuid4()),
+                session_id=session_id,
+                turn_id=assistant_turn_id,
+                query_text=message,
+                intent_classified=response_payload.get("response_mode"),
+                agents_invoked=[],
+                overall_confidence=None,
+                data_freshness_lag_seconds=None,
+                stale_sources=[],
+                error_flag=False,
+                error_detail=None,
+            )
         )
         await db_session.commit()
     except Exception:

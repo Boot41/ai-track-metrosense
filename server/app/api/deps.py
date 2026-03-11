@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings, get_settings
 from app.core.security import decode_access_token
-from app.db.session import get_db_session
 from app.db.models import User
+from app.db.session import get_db_session
 from app.services import auth_service
 
 
@@ -30,7 +30,9 @@ async def require_user(
     try:
         payload = decode_access_token(token, app_settings)
     except Exception as exc:  # noqa: BLE001 - map all token errors to 401
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token") from exc
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        ) from exc
 
     subject = payload.get("sub")
     if subject is None:
@@ -39,7 +41,9 @@ async def require_user(
     try:
         user_id = int(subject)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token") from exc
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        ) from exc
 
     user = await auth_service.get_user_by_id(session, user_id)
     if user is None:

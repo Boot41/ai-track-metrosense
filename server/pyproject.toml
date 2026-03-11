@@ -1,7 +1,7 @@
 [project]
-name = "app-scaffold"
+name = "metrosense-backend"
 version = "0.1.0"
-description = "Full-stack scaffold — FastAPI + React + PostgreSQL + Google ADK"
+description = "MetroSense backend API — FastAPI + PostgreSQL + ADK orchestration"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.111",
@@ -25,6 +25,7 @@ dev = [
   "ruff>=0.5",
   "mypy>=1.10",
   "import-linter>=2.0",
+  "types-passlib>=1.7",
 ]
 
 [tool.uv]

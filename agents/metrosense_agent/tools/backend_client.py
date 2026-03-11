@@ -43,7 +43,7 @@ def _build_dataset_note(payload: Any) -> str:
     return _DATASET_COVERAGE
 
 
-async def _get(path: str, params: dict[str, Any] | None = None) -> ToolResult:
+async def backend_get(path: str, params: dict[str, Any] | None = None) -> ToolResult:
     base_url = _backend_base_url()
     token = _internal_token()
     if not base_url or not token:

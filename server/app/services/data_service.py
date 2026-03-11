@@ -295,9 +295,8 @@ async def get_ward_profile(session: AsyncSession, ward_id: str) -> dict[str, Any
 # raw time-series rows so the agent can reason over the data directly.
 # ---------------------------------------------------------------------------
 
-async def get_aqi_summary(
-    session: AsyncSession, location_id: str
-) -> list[dict[str, Any]]:
+
+async def get_aqi_summary(session: AsyncSession, location_id: str) -> list[dict[str, Any]]:
     """Monthly AQI aggregates for a neighbourhood — up to 12 rows for a full year.
 
     Returns avg/min/max AQI and dominant category per calendar month.
@@ -364,9 +363,7 @@ async def get_aqi_summary(
     ]
 
 
-async def get_weather_summary(
-    session: AsyncSession, location_id: str
-) -> list[dict[str, Any]]:
+async def get_weather_summary(session: AsyncSession, location_id: str) -> list[dict[str, Any]]:
     """Monthly weather aggregates for a zone — up to 12 rows for a full year.
 
     Returns avg/max/min temperature, avg humidity, and total rainfall per month.

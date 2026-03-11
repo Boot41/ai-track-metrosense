@@ -198,7 +198,9 @@ async def weather_summary(
     dependencies=[Depends(require_internal_token)],
 )
 async def weather_extremes(
-    metric: str = Query(default="temperature_celsius", pattern="^(temperature_celsius|rainfall_mm_24hour)$"),
+    metric: str = Query(
+        default="temperature_celsius", pattern="^(temperature_celsius|rainfall_mm_24hour)$"
+    ),
     top_n: int = Query(default=10, ge=1, le=50),
     session: AsyncSession = Depends(db_session),
 ) -> list[dict[str, Any]]:
