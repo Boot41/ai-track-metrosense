@@ -1191,14 +1191,18 @@ name = "metrosense-agents"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "fastapi" },
     { name = "google-adk" },
     { name = "httpx" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "fastapi", specifier = ">=0.110" },
     { name = "google-adk" },
     { name = "httpx", specifier = ">=0.27" },
+    { name = "uvicorn", specifier = ">=0.29" },
 ]
 
 [[package]]

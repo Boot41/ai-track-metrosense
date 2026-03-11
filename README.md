@@ -114,6 +114,12 @@ pnpm exec playwright install
 pnpm run test:e2e
 ```
 
+## MetroSense Golden Dataset
+
+For the implemented Postgres schema + CSV loader for MetroSense golden data, see:
+
+- `docs/METROSENSE_DATASET_SCHEMA_AND_LOADER.md`
+
 ## API Endpoints
 
 | Method | Path | Auth | Description |

@@ -72,10 +72,6 @@ class ErrorPayload(BaseModel):
     message: str
 
 
-class CompositeHealthResponse(BaseModel):
-    backend: str
-    agent: str
-    status: str
 
 
 def _error_response(code: str, message: str, status_code: int) -> JSONResponse:
@@ -117,16 +113,6 @@ async def chat(
         )
 
     return ChatResponse.model_validate(response_payload)
-
-
-@router.get("/health", response_model=CompositeHealthResponse)
-async def api_health(app_settings: Settings = Depends(settings)) -> CompositeHealthResponse:
-    try:
-        payload = await agent_proxy.get_agent_health(app_settings)
-    except httpx.HTTPError:
-        payload = {"backend": "ok", "agent": "down", "status": "degraded"}
-
-    return CompositeHealthResponse.model_validate(payload)
 
 
 @router.delete("/chat/{session_id}", status_code=status.HTTP_204_NO_CONTENT)

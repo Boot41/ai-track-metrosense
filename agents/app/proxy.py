@@ -37,13 +37,13 @@ def _filtered_response_headers(headers: Iterable[tuple[str, str]]) -> dict[str, 
 @app.get("/health")
 async def health() -> Response:
     async with httpx.AsyncClient(timeout=5.0) as client:
-        response = await client.get(f\"{ADK_BASE_URL}/health\")
+        response = await client.get(f"{ADK_BASE_URL}/health")
     response_headers = _filtered_response_headers(response.headers.items())
     return Response(
         content=response.content,
         status_code=response.status_code,
         headers=response_headers,
-        media_type=response.headers.get(\"content-type\"),
+        media_type=response.headers.get("content-type"),
     )
 
 
