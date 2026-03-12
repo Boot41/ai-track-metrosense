@@ -12,14 +12,30 @@
             "role": "user",
             "parts": [
               {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
                 "text": "What is the flood risk in Bellandur tonight?"
               }
             ]
           },
           "final_response": {
-            "role": "model",
+            "role": null,
             "parts": [
               {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
                 "text": "Provide a Bellandur flood-risk summary with rainfall, incident context, and a freshness caveat."
               }
             ]
@@ -47,7 +63,6 @@
                 }
               }
             ],
-            "tool_responses": [],
             "intermediate_responses": []
           },
           "creation_timestamp": 1740000027.0

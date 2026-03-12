@@ -1,0 +1,117 @@
+{
+  "eval_set_id": "root_agent_flood_to_traffic_conversation",
+  "name": "adk/root/root_agent_flood_to_traffic_conversation.test.json",
+  "description": "Multi-turn conversation: user asks about Bellandur flood risk then follows up on traffic impact.",
+  "eval_cases": [
+    {
+      "eval_id": "root_agent_flood_to_traffic_conversation",
+      "conversation": [
+        {
+          "invocation_id": "root-flood-to-traffic-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Is flooding likely in Bellandur tonight based on recent rainfall?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Provide a Bellandur flood-risk assessment based on current rainfall and recent flood incident records, and include a data freshness caveat."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "resolve_location",
+                "args": { "name": "Bellandur" }
+              },
+              {
+                "name": "get_weather_current",
+                "args": { "location_id": "Bellandur", "limit": 1 }
+              },
+              {
+                "name": "get_flood_incidents",
+                "args": { "location_id": "Bellandur", "limit": 20 }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000040.0
+        },
+        {
+          "invocation_id": "root-flood-to-traffic-turn-2",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "If flooding is bad, how will ORR traffic be affected? What delay should I plan for?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Estimate the ORR delay impact under flood conditions using current corridor traffic data and document-sourced delay multipliers, and give a practical travel-time recommendation."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_traffic_corridor",
+                "args": { "corridor_name": "ORR", "limit": 20 }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000041.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000040.0
+    }
+  ],
+  "creation_timestamp": 1740000040.0
+}

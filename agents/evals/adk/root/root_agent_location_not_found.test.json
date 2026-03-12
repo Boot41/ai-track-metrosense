@@ -12,14 +12,30 @@
             "role": "user",
             "parts": [
               {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
                 "text": "What is AQI in Gotham City?"
               }
             ]
           },
           "final_response": {
-            "role": "model",
+            "role": null,
             "parts": [
               {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
                 "text": "Explain that Gotham City is not in the Bengaluru registry and ask for a valid Bengaluru neighbourhood or ward."
               }
             ]
@@ -33,7 +49,6 @@
                 }
               }
             ],
-            "tool_responses": [],
             "intermediate_responses": []
           },
           "creation_timestamp": 1740000026.0

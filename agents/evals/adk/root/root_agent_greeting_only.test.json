@@ -12,21 +12,36 @@
             "role": "user",
             "parts": [
               {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
                 "text": "Hi"
               }
             ]
           },
           "final_response": {
-            "role": "model",
+            "role": null,
             "parts": [
               {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
                 "text": "Introduce MetroSense, mention Bengaluru climate and infrastructure intelligence, and offer example queries."
               }
             ]
           },
           "intermediate_data": {
             "tool_uses": [],
-            "tool_responses": [],
             "intermediate_responses": []
           },
           "creation_timestamp": 1740000022.0

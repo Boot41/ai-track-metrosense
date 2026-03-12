@@ -1,13 +1,13 @@
 {
-  "eval_set_id": "root_agent_off_domain_refusal",
-  "name": "adk/root/root_agent_off_domain_refusal.test.json",
-  "description": "Off-domain refusal at the root agent.",
+  "eval_set_id": "infrastructure_agent_latest_resolved_outage",
+  "name": "adk/subagents/infrastructure_agent_latest_resolved_outage.test.json",
+  "description": "Infrastructure subagent retrieves and summarises the most recently resolved power outage in Hebbal.",
   "eval_cases": [
     {
-      "eval_id": "root_agent_off_domain_refusal",
+      "eval_id": "infrastructure_agent_latest_resolved_outage",
       "conversation": [
         {
-          "invocation_id": "root-agent-off-domain-refusal-turn-1",
+          "invocation_id": "infrastructure-agent-latest-resolved-outage-turn-1",
           "user_content": {
             "role": "user",
             "parts": [
@@ -20,7 +20,7 @@
                 "file_data": null,
                 "function_call": null,
                 "function_response": null,
-                "text": "What is the flood risk in Mumbai tonight?"
+                "text": "What was the most recent resolved power outage in Hebbal and how long did it last?"
               }
             ]
           },
@@ -36,15 +36,20 @@
                 "file_data": null,
                 "function_call": null,
                 "function_response": null,
-                "text": "Refuse politely because MetroSense only handles Bengaluru climate and infrastructure questions."
+                "text": "Identify the most recently resolved power outage event for Hebbal from the outage records, report its duration, and note the probable cause if available in the data."
               }
             ]
           },
           "intermediate_data": {
-            "tool_uses": [],
+            "tool_uses": [
+              {
+                "name": "get_power_outage_events",
+                "args": { "location_id": "Hebbal", "window_days": 30 }
+              }
+            ],
             "intermediate_responses": []
           },
-          "creation_timestamp": 1740000024.0
+          "creation_timestamp": 1740000032.0
         }
       ],
       "session_input": {
@@ -52,8 +57,8 @@
         "user_id": "metrosense-eval-user",
         "state": {}
       },
-      "creation_timestamp": 1740000024.0
+      "creation_timestamp": 1740000032.0
     }
   ],
-  "creation_timestamp": 1740000024.0
+  "creation_timestamp": 1740000032.0
 }

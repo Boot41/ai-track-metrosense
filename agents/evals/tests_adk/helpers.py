@@ -174,6 +174,11 @@ REGISTRY: tuple[EvalTarget, ...] = (
         agent_name="logistics_agent",
     ),
     EvalTarget(
+        case_id="root_agent_greeting_only",
+        layer="root",
+        rel_path="adk/root/root_agent_greeting_only.test.json",
+    ),
+    EvalTarget(
         case_id="root_agent_greeting_with_question",
         layer="root",
         rel_path="adk/root/root_agent_greeting_with_question.test.json",
@@ -187,6 +192,21 @@ REGISTRY: tuple[EvalTarget, ...] = (
         case_id="root_agent_off_domain_refusal",
         layer="root",
         rel_path="adk/root/root_agent_off_domain_refusal.test.json",
+    ),
+    EvalTarget(
+        case_id="root_agent_location_not_found",
+        layer="root",
+        rel_path="adk/root/root_agent_location_not_found.test.json",
+    ),
+    EvalTarget(
+        case_id="root_agent_prompt_injection_refusal",
+        layer="root",
+        rel_path="adk/root/root_agent_prompt_injection_refusal.test.json",
+    ),
+    EvalTarget(
+        case_id="root_agent_flood_to_traffic_conversation",
+        layer="root",
+        rel_path="adk/root/root_agent_flood_to_traffic_conversation.test.json",
     ),
 )
 

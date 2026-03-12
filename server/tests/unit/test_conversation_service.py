@@ -25,7 +25,7 @@ async def test_upsert_session_executes_statement() -> None:
 
 @pytest.mark.asyncio
 async def test_append_turn_adds_user_and_assistant_rows() -> None:
-    session = MagicMock()
+    session = AsyncMock()
     session.add_all = MagicMock()
 
     assistant_turn_id = await conversation_service.append_turn(

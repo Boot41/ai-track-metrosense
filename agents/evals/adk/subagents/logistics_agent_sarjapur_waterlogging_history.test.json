@@ -1,13 +1,13 @@
 {
-  "eval_set_id": "root_agent_off_domain_refusal",
-  "name": "adk/root/root_agent_off_domain_refusal.test.json",
-  "description": "Off-domain refusal at the root agent.",
+  "eval_set_id": "logistics_agent_sarjapur_waterlogging_history",
+  "name": "adk/subagents/logistics_agent_sarjapur_waterlogging_history.test.json",
+  "description": "Logistics subagent summarises historical Sarjapur waterlogging impact on traffic using traffic records.",
   "eval_cases": [
     {
-      "eval_id": "root_agent_off_domain_refusal",
+      "eval_id": "logistics_agent_sarjapur_waterlogging_history",
       "conversation": [
         {
-          "invocation_id": "root-agent-off-domain-refusal-turn-1",
+          "invocation_id": "logistics-agent-sarjapur-waterlogging-history-turn-1",
           "user_content": {
             "role": "user",
             "parts": [
@@ -20,7 +20,7 @@
                 "file_data": null,
                 "function_call": null,
                 "function_response": null,
-                "text": "What is the flood risk in Mumbai tonight?"
+                "text": "How has waterlogging on Sarjapur Road historically impacted traffic and travel times?"
               }
             ]
           },
@@ -36,15 +36,20 @@
                 "file_data": null,
                 "function_call": null,
                 "function_response": null,
-                "text": "Refuse politely because MetroSense only handles Bengaluru climate and infrastructure questions."
+                "text": "Summarise the historical traffic conditions on Sarjapur Road corridor from the traffic records, noting any congestion severity patterns and their impact on travel times, particularly during rain events."
               }
             ]
           },
           "intermediate_data": {
-            "tool_uses": [],
+            "tool_uses": [
+              {
+                "name": "get_traffic_corridor",
+                "args": { "corridor_name": "Sarjapur Road", "limit": 20 }
+              }
+            ],
             "intermediate_responses": []
           },
-          "creation_timestamp": 1740000024.0
+          "creation_timestamp": 1740000033.0
         }
       ],
       "session_input": {
@@ -52,8 +57,8 @@
         "user_id": "metrosense-eval-user",
         "state": {}
       },
-      "creation_timestamp": 1740000024.0
+      "creation_timestamp": 1740000033.0
     }
   ],
-  "creation_timestamp": 1740000024.0
+  "creation_timestamp": 1740000033.0
 }

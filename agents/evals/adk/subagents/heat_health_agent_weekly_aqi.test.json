@@ -12,14 +12,30 @@
             "role": "user",
             "parts": [
               {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
                 "text": "Compare Bellandur AQI over the last week and explain the outdoor exposure implication."
               }
             ]
           },
           "final_response": {
-            "role": "model",
+            "role": null,
             "parts": [
               {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
                 "text": "Summarize Bellandur AQI over the last week and explain the health implication for outdoor exposure."
               }
             ]
@@ -34,7 +50,6 @@
                 }
               }
             ],
-            "tool_responses": [],
             "intermediate_responses": []
           },
           "creation_timestamp": 1740000019.0
