@@ -1,0 +1,51 @@
+{
+  "eval_set_id": "get_ward_profile_hebbal",
+  "name": "adk/tools/get_ward_profile_hebbal.test.json",
+  "description": "Ward profile lookup for Hebbal.",
+  "eval_cases": [
+    {
+      "eval_id": "get_ward_profile_hebbal",
+      "conversation": [
+        {
+          "invocation_id": "get-ward-profile-hebbal-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Use ward_001 and summarize the ward profile for Hebbal."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Summarize the Hebbal ward profile using ward_001, including exposure or vulnerability context if present."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_ward_profile",
+                "args": {
+                  "ward_id": "ward_001"
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000013.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000013.0
+    }
+  ],
+  "creation_timestamp": 1740000013.0
+}

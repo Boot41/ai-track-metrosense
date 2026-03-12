@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "get_weather_extremes_hottest_day_2025",
+  "name": "adk/tools/get_weather_extremes_hottest_day_2025.test.json",
+  "description": "Extreme weather lookup for the hottest day.",
+  "eval_cases": [
+    {
+      "eval_id": "get_weather_extremes_hottest_day_2025",
+      "conversation": [
+        {
+          "invocation_id": "get-weather-extremes-hottest-day-2025-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "What was the hottest day in 2025?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Identify the hottest day of 2025 with date, zone, and temperature context."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_extremes",
+                "args": {
+                  "metric": "temperature_celsius",
+                  "top_n": 1
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000007.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000007.0
+    }
+  ],
+  "creation_timestamp": 1740000007.0
+}

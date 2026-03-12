@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "get_weather_current_bellandur",
+  "name": "adk/tools/get_weather_current_bellandur.test.json",
+  "description": "Current weather lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_weather_current_bellandur",
+      "conversation": [
+        {
+          "invocation_id": "get-weather-current-bellandur-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "What is the current weather in Bellandur?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Return the latest Bellandur weather observation with temperature, rain context, and a freshness note."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_current",
+                "args": {
+                  "location_id": "Bellandur",
+                  "limit": 1
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000004.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000004.0
+    }
+  ],
+  "creation_timestamp": 1740000004.0
+}

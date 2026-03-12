@@ -1,0 +1,60 @@
+{
+  "eval_set_id": "fetch_document_section_drainage_plan_s2",
+  "name": "adk/tools/fetch_document_section_drainage_plan_s2.test.json",
+  "description": "Fetch the threshold-heavy Bellandur drainage plan section.",
+  "eval_cases": [
+    {
+      "eval_id": "fetch_document_section_drainage_plan_s2",
+      "conversation": [
+        {
+          "invocation_id": "fetch-document-section-drainage-plan-s2-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Fetch the Bellandur drainage threshold section from the BBMP drainage plan."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "The relevant BBMP drainage plan threshold section is section s2 of drainage_plan_bbmp_2019."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_document_indexes",
+                "args": {
+                  "document_type": "drainage_plan",
+                  "ward_name": "Bellandur",
+                  "contains_thresholds": true
+                }
+              },
+              {
+                "name": "fetch_document_section",
+                "args": {
+                  "document_id": "drainage_plan_bbmp_2019",
+                  "section_id": "s2"
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000003.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000003.0
+    }
+  ],
+  "creation_timestamp": 1740000003.0
+}

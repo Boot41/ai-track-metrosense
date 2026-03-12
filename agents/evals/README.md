@@ -1,123 +1,79 @@
 # MetroSense Evals
 
-This directory contains the curated MetroSense eval system for both:
-
-- `agent_only`: Google ADK-native evals run against `agents/metrosense_agent`
-- `backend_e2e`: end-to-end evals run through `server /api/chat`
+MetroSense agent evals are authored directly as ADK-native single-case
+`.test.json` files. Each file is one runnable eval for one tool behaviour, one
+subagent behaviour, or one root-agent behaviour.
 
 ## Structure
 
-- `cases/`: canonical MetroSense eval catalogs
-- `schema/`: JSON schema for the canonical catalog format
-- `rubrics/`: MetroSense-specific rubric text used in ADK judge config
-- `runners/`: scripts to build, run, and score evals
-- `fixtures/`: replay inputs for cases that should not depend on live runtime behavior
-- `results/`: local run outputs
+- `adk/tools/`: one eval file per tool behaviour
+- `adk/subagents/`: one eval file per subagent behaviour
+- `adk/root/`: one eval file per root-agent behaviour
+- `tests_adk/`: live `pytest` entrypoints backed by `AgentEvaluator.evaluate(...)`
+- `tests/`: non-live validation tests for asset shape and scorer helpers
+- `fixtures/`: backend replay fixtures kept for scorer utilities
 
-## Canonical Catalog
+Each ADK directory has a `test_config.json` that defines the evaluation
+criteria used by `AgentEvaluator`.
 
-MetroSense uses a repo-specific canonical catalog JSON format. Each case defines:
-
-- one or more conversation turns
-- per-turn expectations
-- backend deterministic assertions
-- tier targets (`agent_only`, `backend_e2e`)
-
-The canonical catalog is compiled into Google ADK `.evalset.json` and `.evalconfig.json` files.
-
-## Build ADK Eval Artifacts
-
-```bash
-cd /home/dell/ai-track-metrosense
-agents/.venv/bin/python agents/evals/runners/build_adk_evalset.py \
-  --catalog agents/evals/cases/core_v1.json \
-  --catalog agents/evals/cases/session_v1.json
-```
-
-Shortcut:
-
-```bash
-make evals-build
-# or
-agents/scripts/evals.sh build
-```
-
-## Run Agent-Only ADK Evals
+## Run Live ADK Evals
 
 Prerequisites:
 
 - `agents/.venv` exists
-- model credentials required by ADK are configured
+- ADK model credentials are configured
+- env for live tool calls such as `BACKEND_INTERNAL_URL` and
+  `AGENT_INTERNAL_TOKEN` is configured when you want tool-backed runs
+- `DOCUMENTS_PATH` points at the MetroSense documents directory
+  (the live harness defaults this to `server/Documents_Metrosense`)
+
+Run all live evals:
 
 ```bash
 cd /home/dell/ai-track-metrosense
-agents/.venv/bin/python agents/evals/runners/run_agent_eval.py \
-  --catalog agents/evals/cases/core_v1.json \
-  --catalog agents/evals/cases/session_v1.json \
-  --print-detailed-results
-```
-
-Shortcut:
-
-```bash
-make evals-agent
-# or
 agents/scripts/evals.sh agent
 ```
 
-## Run Backend End-to-End Evals
-
-Prerequisites:
-
-- PostgreSQL seeded with MetroSense data
-- `server` running on `http://127.0.0.1:8010`
-- `agents` running and reachable from the backend
-
-Run the backend harness:
+Run one layer:
 
 ```bash
-cd /home/dell/ai-track-metrosense
-server/.venv/bin/python agents/evals/runners/run_backend_eval.py \
-  --catalog agents/evals/cases/core_v1.json \
-  --output agents/evals/results/core_backend_results.json
+agents/scripts/evals.sh agent-tools
+agents/scripts/evals.sh agent-subagents
+agents/scripts/evals.sh agent-root
 ```
 
-Shortcut:
+Run one specific file or case id:
 
 ```bash
-make evals-backend
-# or
-agents/scripts/evals.sh backend
+agents/scripts/evals.sh agent-file adk/tools/get_aqi_current_koramangala.test.json
+agents/scripts/evals.sh agent-file get_aqi_current_koramangala
 ```
 
-Then score the results:
+Direct `pytest` entrypoints are also available:
 
 ```bash
-cd /home/dell/ai-track-metrosense
-server/.venv/bin/python agents/evals/runners/score_backend_eval.py \
-  --catalog agents/evals/cases/core_v1.json \
-  --results agents/evals/results/core_backend_results.json \
-  --output agents/evals/results/core_backend_scored.json
+agents/.venv/bin/python -m pytest agents/evals/tests_adk/test_tools.py -q
+agents/.venv/bin/python -m pytest agents/evals/tests_adk/test_subagents.py -q
+agents/.venv/bin/python -m pytest agents/evals/tests_adk/test_root.py -q
 ```
 
-Shortcut:
+The default live run count is `1`. Override it with:
 
 ```bash
-make evals-backend-score
-# or
-agents/scripts/evals.sh backend-score
+METROSENSE_EVAL_NUM_RUNS=3 agents/scripts/evals.sh agent-tools
 ```
 
-## Run Eval Tests
+## Run Non-Live Validation Tests
+
+These tests validate the registry and ADK asset shape without calling a model.
 
 ```bash
-make evals-test
-# or
 agents/scripts/evals.sh test
 ```
 
 ## Notes
 
-- The overflow retry case is fixture-backed in v1 because token overflow is not deterministic enough for a normal live eval run.
-- User simulation is intentionally deferred; v1 focuses on curated fixed-reference evals.
-- The backend scorer emphasizes deterministic contract checks. ADK judge-based quality scoring lives in the agent-only tier.
+- The old grouped `core_v1` and `session_v1` agent catalogs are no longer the
+  source of truth for live agent evals.
+- Backend scorer helpers remain in the repo for deterministic contract tests,
+  but the live agent workflow is now direct ADK file execution.

@@ -1,0 +1,51 @@
+{
+  "eval_set_id": "get_weather_summary_bellandur_2025",
+  "name": "adk/tools/get_weather_summary_bellandur_2025.test.json",
+  "description": "Monthly weather summary lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_weather_summary_bellandur_2025",
+      "conversation": [
+        {
+          "invocation_id": "get-weather-summary-bellandur-2025-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Summarize Bellandur weather by month for 2025."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Provide a month-wise Bellandur weather summary for 2025 using the weather summary dataset."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_summary",
+                "args": {
+                  "location_id": "Bellandur"
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000006.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000006.0
+    }
+  ],
+  "creation_timestamp": 1740000006.0
+}

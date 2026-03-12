@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "get_power_outage_events_hebbal",
+  "name": "adk/tools/get_power_outage_events_hebbal.test.json",
+  "description": "Power outage event lookup for Hebbal.",
+  "eval_cases": [
+    {
+      "eval_id": "get_power_outage_events_hebbal",
+      "conversation": [
+        {
+          "invocation_id": "get-power-outage-events-hebbal-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Check recent power outage events around Hebbal."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Summarize recent Hebbal outage events, including whether there were active or recent feeder disruptions."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_power_outage_events",
+                "args": {
+                  "location_id": "Hebbal",
+                  "window_days": 30
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000014.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000014.0
+    }
+  ],
+  "creation_timestamp": 1740000014.0
+}

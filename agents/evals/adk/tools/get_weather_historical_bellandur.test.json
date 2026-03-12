@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "get_weather_historical_bellandur",
+  "name": "adk/tools/get_weather_historical_bellandur.test.json",
+  "description": "Historical weather lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_weather_historical_bellandur",
+      "conversation": [
+        {
+          "invocation_id": "get-weather-historical-bellandur-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Show Bellandur weather history for the last 30 days."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Summarize Bellandur weather history for the last 30 days using the historical weather series."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_historical",
+                "args": {
+                  "location_id": "Bellandur",
+                  "hours": 720
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000005.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000005.0
+    }
+  ],
+  "creation_timestamp": 1740000005.0
+}

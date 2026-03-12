@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "get_aqi_historical_bellandur_last_week",
+  "name": "adk/tools/get_aqi_historical_bellandur_last_week.test.json",
+  "description": "Historical AQI lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_aqi_historical_bellandur_last_week",
+      "conversation": [
+        {
+          "invocation_id": "get-aqi-historical-bellandur-last-week-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Show Bellandur AQI history for the last week."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Summarize Bellandur AQI history over the last week and call out the worst period."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_aqi_historical",
+                "args": {
+                  "location_id": "Bellandur",
+                  "days": 7
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000011.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000011.0
+    }
+  ],
+  "creation_timestamp": 1740000011.0
+}

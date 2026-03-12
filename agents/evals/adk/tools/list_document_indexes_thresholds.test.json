@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "list_document_indexes_thresholds",
+  "name": "adk/tools/list_document_indexes_thresholds.test.json",
+  "description": "List Bellandur reference documents that contain thresholds.",
+  "eval_cases": [
+    {
+      "eval_id": "list_document_indexes_thresholds",
+      "conversation": [
+        {
+          "invocation_id": "list-document-indexes-thresholds-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "List Bellandur flood or drainage reference documents that include thresholds."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Relevant Bellandur references with thresholds include the Bangalore flood study and the BBMP drainage plan."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_document_indexes",
+                "args": {
+                  "ward_name": "Bellandur",
+                  "contains_thresholds": true
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000002.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000002.0
+    }
+  ],
+  "creation_timestamp": 1740000002.0
+}

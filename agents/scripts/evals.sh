@@ -2,35 +2,52 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+AGENTS_SITE_PACKAGES="$ROOT_DIR/agents/.venv/lib/python3.12/site-packages"
 
-build() {
-  "$ROOT_DIR/agents/.venv/bin/python" "$ROOT_DIR/agents/evals/runners/build_adk_evalset.py" \
-    --catalog agents/evals/cases/core_v1.json \
-    --catalog agents/evals/cases/session_v1.json
+run_live_pytest() {
+  PYTHONPATH="$AGENTS_SITE_PACKAGES:$ROOT_DIR/agents${PYTHONPATH:+:$PYTHONPATH}" \
+    "$ROOT_DIR/server/.venv/bin/python" -m pytest "$@"
+}
+
+run_agent_pytest() {
+  local filter="${1:-}"
+  if [[ -n "$filter" ]]; then
+    METROSENSE_EVAL_FILE="$filter" \
+      run_live_pytest "$ROOT_DIR/agents/evals/tests_adk" -q
+    return
+  fi
+
+  run_live_pytest "$ROOT_DIR/agents/evals/tests_adk" -q
+}
+
+agent_tools() {
+  run_live_pytest "$ROOT_DIR/agents/evals/tests_adk/test_tools.py" -q
+}
+
+agent_subagents() {
+  run_live_pytest "$ROOT_DIR/agents/evals/tests_adk/test_subagents.py" -q
+}
+
+agent_root() {
+  run_live_pytest "$ROOT_DIR/agents/evals/tests_adk/test_root.py" -q
+}
+
+agent_all() {
+  run_agent_pytest
+}
+
+agent_file() {
+  local relative_path="${1:-}"
+  if [[ -z "$relative_path" ]]; then
+    echo "Usage: agents/scripts/evals.sh agent-file <relative-path-or-case-id>" >&2
+    exit 1
+  fi
+
+  run_agent_pytest "$relative_path"
 }
 
 tests() {
   "$ROOT_DIR/server/.venv/bin/python" -m pytest "$ROOT_DIR/agents/evals/tests" -q
-}
-
-agent() {
-  "$ROOT_DIR/agents/.venv/bin/python" "$ROOT_DIR/agents/evals/runners/run_agent_eval.py" \
-    --catalog agents/evals/cases/core_v1.json \
-    --catalog agents/evals/cases/session_v1.json \
-    --print-detailed-results
-}
-
-backend() {
-  "$ROOT_DIR/server/.venv/bin/python" "$ROOT_DIR/agents/evals/runners/run_backend_eval.py" \
-    --catalog agents/evals/cases/core_v1.json \
-    --output agents/evals/results/core_backend_results.json
-}
-
-backend_score() {
-  "$ROOT_DIR/server/.venv/bin/python" "$ROOT_DIR/agents/evals/runners/score_backend_eval.py" \
-    --catalog agents/evals/cases/core_v1.json \
-    --results agents/evals/results/core_backend_results.json \
-    --output agents/evals/results/core_backend_scored.json
 }
 
 usage() {
@@ -38,29 +55,34 @@ usage() {
 Usage: agents/scripts/evals.sh <command>
 
 Commands:
-  build          Generate schema and ADK eval artifacts
-  test           Run eval-unit tests
-  agent          Run ADK agent-only evals
-  backend        Run backend end-to-end evals
-  backend-score  Score the latest backend eval results
+  test            Run non-live eval asset/unit tests
+  agent           Run all ADK evals
+  agent-tools     Run tool-level ADK evals
+  agent-subagents Run subagent-level ADK evals
+  agent-root      Run root-agent ADK evals
+  agent-file      Run one ADK eval by relative path or case id
 EOF
 }
 
 case "${1:-}" in
-  build)
-    build
-    ;;
   test)
     tests
     ;;
   agent)
-    agent
+    agent_all
     ;;
-  backend)
-    backend
+  agent-tools)
+    agent_tools
     ;;
-  backend-score)
-    backend_score
+  agent-subagents)
+    agent_subagents
+    ;;
+  agent-root)
+    agent_root
+    ;;
+  agent-file)
+    shift
+    agent_file "${1:-}"
     ;;
   *)
     usage

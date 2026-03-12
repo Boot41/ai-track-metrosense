@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "get_traffic_corridor_orr",
+  "name": "adk/tools/get_traffic_corridor_orr.test.json",
+  "description": "Traffic corridor lookup for ORR.",
+  "eval_cases": [
+    {
+      "eval_id": "get_traffic_corridor_orr",
+      "conversation": [
+        {
+          "invocation_id": "get-traffic-corridor-orr-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "What is the current delay on ORR?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Report the current ORR delay and congestion context using the corridor dataset."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_traffic_corridor",
+                "args": {
+                  "corridor_name": "ORR",
+                  "limit": 20
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000016.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000016.0
+    }
+  ],
+  "creation_timestamp": 1740000016.0
+}

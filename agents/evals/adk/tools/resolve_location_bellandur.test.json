@@ -1,0 +1,51 @@
+{
+  "eval_set_id": "resolve_location_bellandur",
+  "name": "adk/tools/resolve_location_bellandur.test.json",
+  "description": "Resolve a Bengaluru location before downstream reasoning.",
+  "eval_cases": [
+    {
+      "eval_id": "resolve_location_bellandur",
+      "conversation": [
+        {
+          "invocation_id": "resolve-location-bellandur-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Resolve Bellandur in Bengaluru before answering any climate question."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Bellandur is a valid Bengaluru neighbourhood. I can use that canonical location for follow-up climate or infrastructure questions."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "resolve_location",
+                "args": {
+                  "name": "Bellandur"
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000001.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000001.0
+    }
+  ],
+  "creation_timestamp": 1740000001.0
+}
