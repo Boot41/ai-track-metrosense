@@ -132,6 +132,12 @@ REGISTRY: tuple[EvalTarget, ...] = (
         agent_name="flood_vulnerability_agent",
     ),
     EvalTarget(
+        case_id="flood_vulnerability_agent_underpass_barricade_history",
+        layer="subagents",
+        rel_path="adk/subagents/flood_vulnerability_agent_underpass_barricade_history.test.json",
+        agent_name="flood_vulnerability_agent",
+    ),
+    EvalTarget(
         case_id="flood_vulnerability_agent_future_data_gap",
         layer="subagents",
         rel_path="adk/subagents/flood_vulnerability_agent_future_data_gap.test.json",
