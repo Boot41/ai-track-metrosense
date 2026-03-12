@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "get_aqi_historical_bellandur_last_week",
+  "name": "adk/tools/get_aqi_historical_bellandur_last_week.test.json",
+  "description": "Historical AQI lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_aqi_historical_bellandur_last_week",
+      "conversation": [
+        {
+          "invocation_id": "get-aqi-historical-bellandur-last-week-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Show Bellandur AQI history for the last week."
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"heat_health_agent\",\"query_id\":\"eval-aqi-historical\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"Bellandur AQI history over the last week is summarized, including the worst period in the returned window.\",\"details\":{\"tool\":\"get_aqi_historical\",\"location\":\"Bellandur\",\"days\":7},\"health_advisory\":\"Highlight the worst AQI period and any practical exposure implication.\"},\"citations\":[\"get_aqi_historical (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"aqi\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_aqi_historical",
+                "args": {
+                  "location_id": "Bellandur",
+                  "days": 7
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000011.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000011.0
+    }
+  ],
+  "creation_timestamp": 1740000011.0
+}

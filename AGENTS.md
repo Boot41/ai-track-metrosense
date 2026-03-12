@@ -8,7 +8,7 @@
   - `server/`: public backend API and orchestration layer
   - `agents/`: internal agent server and tool-execution layer (✅ **exists and wired**, current status: skeleton with google_search tool only)
 - Treat the current implementation as the baseline and evolve it toward this three-service design instead of creating parallel app structures.
-- **Status**: ~40% complete. Auth flow, backend-to-agent routing, and database schema are functional. Data seeding, custom agent tools, risk cards/artifacts, streaming, and message persistence are planned.
+- **Status**: ~70% complete. Auth flow, backend-to-agent routing, database schema, internal data routes, custom domain agent tools, structured response contract, and full subagent hierarchy are functional. Data seeding (script ready, not yet run), streaming, and E2E tests remain.
 
 ## Canonical Architecture
 - The intended request flow is:
@@ -107,18 +107,26 @@
 ## Current Coverage And Next-Step Expectations
 
 ### Implemented (✅)
-- **Backend:** Auth flow (signup/login/logout/me with JWT + httponly cookies), health checks, database schema (9+ models for weather/AQI/flooding/outages/traffic), `/api/chat` endpoint
+- **Backend:** Auth flow (signup/login/logout/me with JWT + httponly cookies), health checks, database schema (10+ models for weather/AQI/flooding/outages/traffic, sessions, conversation history), `/api/chat` endpoint with full `RiskCardPayload` and `ArtifactPayload` response schema
+- **Backend Internal Routes:** All `/internal/*` data routes (weather, AQI, lakes, floods, outages, traffic, ward profile, locations) — token-gated, consumed only by agent tools
+- **Backend Services:** `data_service.py` (all domain DB queries + neighbourhood→zone mapping), `conversation_service.py` (session upsert + turn append to `ConversationHistory`), `agent_proxy.py` (Level-2 and Level-1 ADK response parsing)
 - **Backend-to-Agent:** Proxy service with `X-Internal-Token` validation, session routing to ADK
-- **Frontend:** Chat UI (MessageBubble, MessageList, InputBar), auth context (login/signup/logout), RiskCard and ArtifactRenderer components, health polling
-- **Tests:** Auth flow (signup/login/logout), password hashing, health checks, basic chat endpoint
+- **Agent Subagent Hierarchy:** Five-agent system (`root_agent → chat_agent → flood_vulnerability_agent / heat_health_agent / infrastructure_agent / logistics_agent`) using `gemini-2.5-flash`
+- **Agent Tools:** `flood_tools` (lake hydrology, flood incidents), `heat_tools` (AQI current/historical, ward profile), `infra_tools` (power outage events), `logistics_tools` (traffic current/corridor), `shared/weather_tools` (weather current/historical), `shared/location_tools` (resolve/list locations), `shared/document_tools` (list indexes, fetch section)
+- **Orchestration:** `routing.py` (keyword-based intent classification: flood/heat/infra/logistics/greeting), `response_contract.py` (`build_level2_response()` structured output builder)
+- **Prompts:** Domain-specific system prompts for all five agents; `CHAT_AGENT_INSTRUCTION` mandates JSON-only structured output with data freshness caveats and off-domain refusal
+- **Data Loader Script:** `server/scripts/load_metrosense_dataset.py` — reads 6 CSVs and inserts reference + domain tables; run with `uv run python scripts/load_metrosense_dataset.py --replace` (not yet executed)
+- **Frontend:** Chat UI (MessageBubble, MessageList, InputBar, ThinkingIndicator, SuggestedPrompts), auth context (login/signup/logout), RiskCard and ArtifactRenderer components, health polling
+- **Tests:** Auth flow (signup/login/logout/me), password hashing, health checks, basic chat endpoint
 
 ### Planned (📋)
-- **Agent Tools:** Custom tools for flood-risk assessment, AQI lookup, outage status, traffic conditions, document retrieval
-- **Data Seeding:** Load CSV data (DataSet_MetroSense/) and documents (Documents_Metrosense/) into database
-- **Structured Responses:** Risk cards and artifacts emitted by agent layer; backend extracts and shapes for frontend
-- **Streaming:** Server-sent events (SSE) or WebSocket for streamed text responses
-- **Message Persistence:** Store chat history in database; load conversation context for agents
-- **Chat Response Tests:** Extend coverage for agent output parsing, risk card generation, artifact rendering
+- **Data Seeding:** `load_metrosense_dataset.py` exists and is ready to run; CSVs not yet loaded into PostgreSQL — run once before agent tools can return real data
+- **Document Ingestion:** Reference documents (`Documents_Metrosense/`) are read directly from the filesystem by `document_tools`; no DB ingestion needed
+- **Streaming:** Responses are buffered POST/response; SSE or WebSocket streaming not yet implemented
+- **Message Context Loading:** `ConversationHistory` model and `conversation_service` exist; conversation context not yet injected into agent session on new requests
+- **Structured Risk Card Generation:** End-to-end schema is wired (`RiskCardPayload` in routes, `build_level2_response()` in agents); requires data seeding + agent logic to populate fields
+- **E2E Tests:** Playwright configured; no test suites written yet
+- **Chat Response Tests:** Coverage for agent output parsing, risk card generation, artifact rendering
 
 ### Current Test Coverage
 - Backend: Health, auth (signup/login/logout/me), password hashing, basic chat routing
@@ -126,17 +134,19 @@
 - Agents: smoke_test.py validates proxy routing only (not domain logic)
 
 ### Next Steps (Recommended Order)
-1. Implement data loader to seed MetroSense CSVs and documents
-2. Add custom agent tools (flood-risk, aqi-lookup, outage-status, traffic)
-3. Implement structured response generation (risk cards/artifacts from agent)
-4. Add message history persistence and context retrieval
-5. Implement streaming responses (SSE or WebSocket)
-6. Extend test coverage for full end-to-end flows
+1. **Run data loader** — `cd server && uv run python scripts/load_metrosense_dataset.py --replace` to seed CSVs into PostgreSQL so agent tools return real data
+2. **Validate agent tool responses** — Smoke-test each domain tool end-to-end (internal routes → data_service → PostgreSQL) after seeding
+3. **Wire conversation context** — Pass recent `ConversationHistory` turns to the agent session so the agent has chat memory
+4. **Validate structured output** — Confirm `build_level2_response()` + `RiskCardPayload` round-trip produces renderable frontend cards
+5. **Implement streaming** — Add SSE or WebSocket to `/api/chat` for incremental text delivery
+6. **Write E2E tests** — Playwright suites covering login → chat → risk card render
 
 ## Agent Guidance
 - Before major implementation work, verify repo truth from `README.md`, `server/pyproject.toml`, `client/package.json`, and `docs/FRONTEND_SPEC.md`.
 - Prefer `rg` for search.
 - Do not document or reference unimplemented services as if they already exist.
-- **Important:** The CSV data files (DataSet_MetroSense/) and documents (Documents_Metrosense/) exist in the repo but are **not yet loaded** into the database. Implement a data loader before building agent tools that depend on MetroSense domain knowledge.
-- The agent service skeleton runs and routes to google_search tool, but custom domain tools (flood-risk, aqi, outage, traffic) do not yet exist. Add tools incrementally as matching backend data becomes available.
+- **Important:** The CSV data files (`DataSet_MetroSense/`) exist in the repo and the loader script (`server/scripts/load_metrosense_dataset.py`) is implemented but **not yet run**. Seed the database before expecting agent domain tools to return real data.
+- Documents (`Documents_Metrosense/`) are served directly from the filesystem by `document_tools` — no DB load needed, but `DOCUMENTS_PATH` env must point to the correct directory.
+- The `metrosense_agent/` is the production agent; `metrosearch_agent/` is a legacy skeleton that can be removed. All five subagents and their domain tools are implemented and wired into the ADK hierarchy.
+- The `response_contract.py` `build_level2_response()` builder and all Pydantic schemas (`RiskCardPayload`, `ArtifactPayload`) are in place end-to-end — the remaining gap is data availability and agent logic populating those fields.
 - If current behavior and MetroSense direction diverge, align new work to the MetroSense direction while keeping transitions explicit and incremental.

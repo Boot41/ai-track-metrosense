@@ -1,0 +1,66 @@
+{
+  "eval_set_id": "get_ward_profile_hebbal",
+  "name": "adk/tools/get_ward_profile_hebbal.test.json",
+  "description": "Ward profile lookup for Hebbal.",
+  "eval_cases": [
+    {
+      "eval_id": "get_ward_profile_hebbal",
+      "conversation": [
+        {
+          "invocation_id": "get-ward-profile-hebbal-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Use ward_001 and summarize the ward profile for Hebbal."
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"heat_health_agent\",\"query_id\":\"eval-ward-profile\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"The Hebbal ward profile is summarized using ward_001, including vulnerability context when available.\",\"details\":{\"tool\":\"get_ward_profile\",\"ward_id\":\"ward_001\"},\"health_advisory\":\"Use ward vulnerability context to tailor any health recommendation.\"},\"citations\":[\"get_ward_profile (ward_001)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"ward_profile\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_ward_profile",
+                "args": {
+                  "ward_id": "ward_001"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000013.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000013.0
+    }
+  ],
+  "creation_timestamp": 1740000013.0
+}

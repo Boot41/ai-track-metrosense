@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "get_aqi_current_koramangala",
+  "name": "adk/tools/get_aqi_current_koramangala.test.json",
+  "description": "Current AQI lookup for Koramangala.",
+  "eval_cases": [
+    {
+      "eval_id": "get_aqi_current_koramangala",
+      "conversation": [
+        {
+          "invocation_id": "get-aqi-current-koramangala-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What is AQI in Koramangala now?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"heat_health_agent\",\"query_id\":\"eval-aqi-current\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.9,\"data\":{\"summary\":\"The current Koramangala AQI is returned with category and dominant pollutant context.\",\"details\":{\"tool\":\"get_aqi_current\",\"location\":\"Koramangala\"},\"health_advisory\":\"Include pollutant-specific health context when the dominant pollutant is available.\"},\"citations\":[\"get_aqi_current (Koramangala)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"aqi\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_aqi_current",
+                "args": {
+                  "location_id": "Koramangala",
+                  "limit": 1
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000010.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000010.0
+    }
+  ],
+  "creation_timestamp": 1740000010.0
+}

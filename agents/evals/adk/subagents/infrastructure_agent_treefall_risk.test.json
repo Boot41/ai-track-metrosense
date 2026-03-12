@@ -1,0 +1,74 @@
+{
+  "eval_set_id": "infrastructure_agent_treefall_risk",
+  "name": "adk/subagents/infrastructure_agent_treefall_risk.test.json",
+  "description": "Infrastructure subagent reasons about treefall outage risk.",
+  "eval_cases": [
+    {
+      "eval_id": "infrastructure_agent_treefall_risk",
+      "conversation": [
+        {
+          "invocation_id": "infrastructure-agent-treefall-risk-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Will tonight's wind gusts cause treefall outages in Hebbal?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Estimate whether current wind conditions raise treefall outage risk in Hebbal using recent outage context."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_current",
+                "args": {
+                  "location_id": "Hebbal",
+                  "limit": 1
+                }
+              },
+              {
+                "name": "get_power_outage_events",
+                "args": {
+                  "location_id": "Hebbal",
+                  "window_days": 30
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000020.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000020.0
+    }
+  ],
+  "creation_timestamp": 1740000020.0
+}

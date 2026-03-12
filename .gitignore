@@ -23,3 +23,5 @@ skills-lock.json
 server/DataSet_MetroSense
 server/Documents_Metrosense
 docs/Files/*
+
+agents/metrosense_agent/.adk/eval_history/*

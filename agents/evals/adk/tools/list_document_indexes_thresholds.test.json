@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "list_document_indexes_thresholds",
+  "name": "adk/tools/list_document_indexes_thresholds.test.json",
+  "description": "List Bellandur reference documents that contain thresholds.",
+  "eval_cases": [
+    {
+      "eval_id": "list_document_indexes_thresholds",
+      "conversation": [
+        {
+          "invocation_id": "list-document-indexes-thresholds-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "List Bellandur flood or drainage reference documents that include thresholds."
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"response_mode\":\"text\",\"response_text\":\"Relevant Bellandur threshold references include the Bangalore flood study and the BBMP drainage plan.\",\"citations_summary\":[{\"source\":\"list_document_indexes (Bellandur thresholds)\"}],\"data_freshness_summary\":{\"note\":\"Document indexes are static filesystem references.\"},\"risk_card\":null,\"artifact\":null,\"follow_up_prompt\":null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_document_indexes",
+                "args": {
+                  "ward_name": "Bellandur",
+                  "contains_thresholds": true
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000002.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000002.0
+    }
+  ],
+  "creation_timestamp": 1740000002.0
+}

@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "get_lake_hydrology_bellandur",
+  "name": "adk/tools/get_lake_hydrology_bellandur.test.json",
+  "description": "Lake hydrology lookup for Bellandur lake.",
+  "eval_cases": [
+    {
+      "eval_id": "get_lake_hydrology_bellandur",
+      "conversation": [
+        {
+          "invocation_id": "get-lake-hydrology-bellandur-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What is Bellandur lake fill level and alert status?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-lake-hydrology\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.9,\"data\":{\"summary\":\"Bellandur lake fill percentage, alert status, and hydrology context are returned from the latest lake readings.\",\"details\":{\"tool\":\"get_lake_hydrology\",\"lake_id\":\"lake_001\"},\"reasoning_chain\":\"\"},\"citations\":[\"get_lake_hydrology (lake_001)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"lake_hydrology\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_lake_hydrology",
+                "args": {
+                  "lake_id": "lake_001",
+                  "limit": 5
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000008.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000008.0
+    }
+  ],
+  "creation_timestamp": 1740000008.0
+}

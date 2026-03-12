@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "get_weather_extremes_hottest_day_2025",
+  "name": "adk/tools/get_weather_extremes_hottest_day_2025.test.json",
+  "description": "Extreme weather lookup for the hottest day.",
+  "eval_cases": [
+    {
+      "eval_id": "get_weather_extremes_hottest_day_2025",
+      "conversation": [
+        {
+          "invocation_id": "get-weather-extremes-hottest-day-2025-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What was the hottest day in 2025?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-weather-extremes\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"The hottest day of 2025 is identified with date, zone, and temperature context.\",\"details\":{\"tool\":\"get_weather_extremes\",\"metric\":\"temperature_celsius\",\"top_n\":1},\"reasoning_chain\":\"\"},\"citations\":[\"get_weather_extremes (temperature_celsius)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"weather\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_extremes",
+                "args": {
+                  "metric": "temperature_celsius",
+                  "top_n": 1
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000007.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000007.0
+    }
+  ],
+  "creation_timestamp": 1740000007.0
+}

@@ -1,0 +1,73 @@
+{
+  "eval_set_id": "chat_agent_aqi_delegation",
+  "name": "adk/subagents/chat_agent_aqi_delegation.test.json",
+  "description": "Chat agent delegates a direct AQI lookup correctly.",
+  "eval_cases": [
+    {
+      "eval_id": "chat_agent_aqi_delegation",
+      "conversation": [
+        {
+          "invocation_id": "chat-agent-aqi-delegation-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What is AQI in Koramangala now?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Answer the Koramangala AQI lookup directly with AQI category and a freshness caveat."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "resolve_location",
+                "args": {
+                  "name": "Koramangala"
+                }
+              },
+              {
+                "name": "get_aqi_current",
+                "args": {
+                  "location_id": "Koramangala",
+                  "limit": 1
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000017.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000017.0
+    }
+  ],
+  "creation_timestamp": 1740000017.0
+}

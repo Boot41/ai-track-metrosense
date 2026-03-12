@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "get_weather_historical_bellandur",
+  "name": "adk/tools/get_weather_historical_bellandur.test.json",
+  "description": "Historical weather lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_weather_historical_bellandur",
+      "conversation": [
+        {
+          "invocation_id": "get-weather-historical-bellandur-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Show Bellandur weather history for the last 30 days."
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-weather-historical\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"Bellandur weather history over the last 30 days is summarized from the historical weather series.\",\"details\":{\"tool\":\"get_weather_historical\",\"location\":\"Bellandur\",\"hours\":720},\"reasoning_chain\":\"\"},\"citations\":[\"get_weather_historical (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"weather\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_historical",
+                "args": {
+                  "location_id": "Bellandur",
+                  "hours": 720
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000005.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000005.0
+    }
+  ],
+  "creation_timestamp": 1740000005.0
+}

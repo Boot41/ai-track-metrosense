@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "heat_health_agent_weekly_aqi",
+  "name": "adk/subagents/heat_health_agent_weekly_aqi.test.json",
+  "description": "Heat subagent reasons over weekly AQI history.",
+  "eval_cases": [
+    {
+      "eval_id": "heat_health_agent_weekly_aqi",
+      "conversation": [
+        {
+          "invocation_id": "heat-health-agent-weekly-aqi-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Compare Bellandur AQI over the last week and explain the outdoor exposure implication."
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Summarize Bellandur AQI over the last week and explain the health implication for outdoor exposure."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_aqi_historical",
+                "args": {
+                  "location_id": "Bellandur",
+                  "days": 7
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000019.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000019.0
+    }
+  ],
+  "creation_timestamp": 1740000019.0
+}

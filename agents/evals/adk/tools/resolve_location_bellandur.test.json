@@ -1,0 +1,66 @@
+{
+  "eval_set_id": "resolve_location_bellandur",
+  "name": "adk/tools/resolve_location_bellandur.test.json",
+  "description": "Resolve a Bengaluru location before downstream reasoning.",
+  "eval_cases": [
+    {
+      "eval_id": "resolve_location_bellandur",
+      "conversation": [
+        {
+          "invocation_id": "resolve-location-bellandur-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Resolve Bellandur in Bengaluru before answering any climate question."
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"response_mode\":\"text\",\"response_text\":\"Bellandur is resolved as a valid Bengaluru neighbourhood and is ready for follow-up climate or infrastructure questions.\",\"citations_summary\":[{\"source\":\"resolve_location (Bellandur)\"}],\"data_freshness_summary\":{\"note\":\"Location resolution does not have a freshness timestamp.\"},\"risk_card\":null,\"artifact\":null,\"follow_up_prompt\":null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "resolve_location",
+                "args": {
+                  "name": "Bellandur"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000001.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000001.0
+    }
+  ],
+  "creation_timestamp": 1740000001.0
+}

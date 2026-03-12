@@ -1,0 +1,66 @@
+{
+  "eval_set_id": "get_aqi_summary_bellandur_2025",
+  "name": "adk/tools/get_aqi_summary_bellandur_2025.test.json",
+  "description": "Monthly AQI summary lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_aqi_summary_bellandur_2025",
+      "conversation": [
+        {
+          "invocation_id": "get-aqi-summary-bellandur-2025-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Summarize Bellandur AQI by month for 2025."
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"heat_health_agent\",\"query_id\":\"eval-aqi-summary\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"A month-wise Bellandur AQI summary for 2025 is returned from the AQI summary dataset.\",\"details\":{\"tool\":\"get_aqi_summary\",\"location\":\"Bellandur\"},\"health_advisory\":\"Use the monthly AQI pattern to explain seasonal exposure changes if relevant.\"},\"citations\":[\"get_aqi_summary (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"aqi\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_aqi_summary",
+                "args": {
+                  "location_id": "Bellandur"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000012.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000012.0
+    }
+  ],
+  "creation_timestamp": 1740000012.0
+}

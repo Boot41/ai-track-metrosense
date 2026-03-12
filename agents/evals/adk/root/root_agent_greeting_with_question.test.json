@@ -1,0 +1,73 @@
+{
+  "eval_set_id": "root_agent_greeting_with_question",
+  "name": "adk/root/root_agent_greeting_with_question.test.json",
+  "description": "Greeting plus direct user question at the root agent.",
+  "eval_cases": [
+    {
+      "eval_id": "root_agent_greeting_with_question",
+      "conversation": [
+        {
+          "invocation_id": "root-agent-greeting-with-question-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Hi, what is AQI in Bellandur now?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Skip the greeting-only intro and answer the Bellandur AQI question directly."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "resolve_location",
+                "args": {
+                  "name": "Bellandur"
+                }
+              },
+              {
+                "name": "get_aqi_current",
+                "args": {
+                  "location_id": "Bellandur",
+                  "limit": 1
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000023.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000023.0
+    }
+  ],
+  "creation_timestamp": 1740000023.0
+}

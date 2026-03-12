@@ -7,9 +7,10 @@ import type { Message } from "@/types/chat";
 interface MessageListProps {
   isSending: boolean;
   messages: Message[];
+  readOnlyMode?: boolean;
 }
 
-export default function MessageList({ isSending, messages }: MessageListProps) {
+export default function MessageList({ isSending, messages, readOnlyMode = false }: MessageListProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [stickToBottom, setStickToBottom] = useState(true);
 
@@ -49,6 +50,22 @@ export default function MessageList({ isSending, messages }: MessageListProps) {
       sx={{ flex: 1, overflowY: "auto", px: { xs: 2, md: 4 }, py: 3 }}
     >
       {messages.length === 0 ? emptyState : <Stack spacing={2}>{messages.map((message) => <MessageBubble key={message.id} message={message} />)}</Stack>}
+      {readOnlyMode ? (
+        <Box
+          sx={{
+            mt: 2,
+            border: "1px solid #E5C56A",
+            backgroundColor: "#FFF8E1",
+            borderRadius: 2,
+            px: 2,
+            py: 1.5,
+          }}
+        >
+          <Typography variant="body2" fontWeight={600} color="#7A5A00">
+            Viewing previous chat (read-only). Start a new chat to send messages.
+          </Typography>
+        </Box>
+      ) : null}
       {isSending ? <ThinkingIndicator /> : null}
     </Box>
   );

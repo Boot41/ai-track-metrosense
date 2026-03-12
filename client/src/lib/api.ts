@@ -1,5 +1,11 @@
 import axios from "axios";
-import type { ChatRequest, ChatResponse, HealthResponse } from "@/types/chat";
+import type {
+  ChatRequest,
+  ChatResponse,
+  ChatSessionsResponse,
+  ChatTranscriptResponse,
+  HealthResponse,
+} from "@/types/chat";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? "/",
@@ -13,6 +19,16 @@ export async function postChat(payload: ChatRequest): Promise<ChatResponse> {
 
 export async function getHealth(): Promise<HealthResponse> {
   const response = await api.get<HealthResponse>("/api/health");
+  return response.data;
+}
+
+export async function getChatSessions(limit = 20, offset = 0): Promise<ChatSessionsResponse> {
+  const response = await api.get<ChatSessionsResponse>("/api/chat/sessions", { params: { limit, offset } });
+  return response.data;
+}
+
+export async function getChatSession(sessionId: string): Promise<ChatTranscriptResponse> {
+  const response = await api.get<ChatTranscriptResponse>(`/api/chat/sessions/${sessionId}`);
   return response.data;
 }
 

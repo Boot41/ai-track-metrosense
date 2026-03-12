@@ -1,0 +1,68 @@
+{
+  "eval_set_id": "heat_health_agent_future_data_gap",
+  "name": "adk/subagents/heat_health_agent_future_data_gap.test.json",
+  "description": "Heat-health subagent correctly communicates the data-gap when asked for a future AQI forecast.",
+  "eval_cases": [
+    {
+      "eval_id": "heat_health_agent_future_data_gap",
+      "conversation": [
+        {
+          "invocation_id": "heat-health-agent-future-data-gap-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What will the AQI in Koramangala be tomorrow and next week?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Explain that MetroSense does not have predictive AQI forecasts; only current and historical observed data is available. Provide the current AQI for Koramangala and note what the recent weekly trend looks like as useful context."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_aqi_current",
+                "args": { "location_id": "Koramangala", "limit": 1 }
+              },
+              {
+                "name": "get_aqi_historical",
+                "args": { "location_id": "Koramangala", "days": 7 }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000031.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000031.0
+    }
+  ],
+  "creation_timestamp": 1740000031.0
+}

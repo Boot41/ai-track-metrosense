@@ -1,0 +1,66 @@
+{
+  "eval_set_id": "get_weather_summary_bellandur_2025",
+  "name": "adk/tools/get_weather_summary_bellandur_2025.test.json",
+  "description": "Monthly weather summary lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_weather_summary_bellandur_2025",
+      "conversation": [
+        {
+          "invocation_id": "get-weather-summary-bellandur-2025-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Summarize Bellandur weather by month for 2025."
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-weather-summary\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"A month-wise Bellandur weather summary for 2025 is returned from the weather summary dataset.\",\"details\":{\"tool\":\"get_weather_summary\",\"location\":\"Bellandur\"},\"reasoning_chain\":\"\"},\"citations\":[\"get_weather_summary (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"weather\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_summary",
+                "args": {
+                  "location_id": "Bellandur"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000006.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000006.0
+    }
+  ],
+  "creation_timestamp": 1740000006.0
+}

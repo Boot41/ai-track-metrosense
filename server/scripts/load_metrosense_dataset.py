@@ -3,14 +3,21 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection, create_async_engine
+
+# Allow direct script execution via:
+# `uv run python scripts/load_metrosense_dataset.py --replace`
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.config import SERVER_DIR, get_settings
 
@@ -416,7 +423,7 @@ async def _insert_rows(
         for row in raw_batch:
             normalized_row: dict[str, Any] = {}
             for key, value in row.items():
-                if isinstance(value, (list, dict)):
+                if isinstance(value, list | dict):
                     normalized_row[key] = json.dumps(value)
                 else:
                     normalized_row[key] = value

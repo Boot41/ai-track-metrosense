@@ -17,6 +17,11 @@ depends_on = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    exists = bind.execute(sa.text("SELECT to_regclass('public.users')")).scalar()
+    if exists is not None:
+        return
+
     op.create_table(
         "users",
         sa.Column("id", sa.Integer(), primary_key=True),

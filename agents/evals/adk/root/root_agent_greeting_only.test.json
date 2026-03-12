@@ -1,0 +1,59 @@
+{
+  "eval_set_id": "root_agent_greeting_only",
+  "name": "adk/root/root_agent_greeting_only.test.json",
+  "description": "Greeting-only user turn at the root agent.",
+  "eval_cases": [
+    {
+      "eval_id": "root_agent_greeting_only",
+      "conversation": [
+        {
+          "invocation_id": "root-agent-greeting-only-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Hi"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Introduce MetroSense, mention Bengaluru climate and infrastructure intelligence, and offer example queries."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000022.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000022.0
+    }
+  ],
+  "creation_timestamp": 1740000022.0
+}

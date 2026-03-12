@@ -1,0 +1,66 @@
+{
+  "eval_set_id": "root_agent_location_not_found",
+  "name": "adk/root/root_agent_location_not_found.test.json",
+  "description": "Unknown location handling at the root agent.",
+  "eval_cases": [
+    {
+      "eval_id": "root_agent_location_not_found",
+      "conversation": [
+        {
+          "invocation_id": "root-agent-location-not-found-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What is AQI in Gotham City?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Explain that Gotham City is not in the Bengaluru registry and ask for a valid Bengaluru neighbourhood or ward."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "resolve_location",
+                "args": {
+                  "name": "Gotham City"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000026.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000026.0
+    }
+  ],
+  "creation_timestamp": 1740000026.0
+}

@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "get_flood_incidents_bellandur",
+  "name": "adk/tools/get_flood_incidents_bellandur.test.json",
+  "description": "Flood incident lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_flood_incidents_bellandur",
+      "conversation": [
+        {
+          "invocation_id": "get-flood-incidents-bellandur-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "How many recent flood incidents were reported in Bellandur?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-flood-incidents\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"Recent Bellandur flood incidents are summarized with counts and severity if available.\",\"details\":{\"tool\":\"get_flood_incidents\",\"location\":\"Bellandur\"},\"reasoning_chain\":\"\"},\"citations\":[\"get_flood_incidents (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"flood_incidents\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_flood_incidents",
+                "args": {
+                  "location_id": "Bellandur",
+                  "limit": 20
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000009.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000009.0
+    }
+  ],
+  "creation_timestamp": 1740000009.0
+}

@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "get_weather_current_bellandur",
+  "name": "adk/tools/get_weather_current_bellandur.test.json",
+  "description": "Current weather lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_weather_current_bellandur",
+      "conversation": [
+        {
+          "invocation_id": "get-weather-current-bellandur-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What is the current weather in Bellandur?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-weather-current\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.9,\"data\":{\"summary\":\"Return the latest Bellandur weather observation with temperature, rainfall context, and a freshness note.\",\"details\":{\"tool\":\"get_weather_current\",\"location\":\"Bellandur\"},\"reasoning_chain\":\"\"},\"citations\":[\"get_weather_current (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"weather\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_current",
+                "args": {
+                  "location_id": "Bellandur",
+                  "limit": 1
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000004.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000004.0
+    }
+  ],
+  "creation_timestamp": 1740000004.0
+}

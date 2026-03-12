@@ -1,4 +1,4 @@
-import { Box, Divider, LinearProgress, Stack, Typography } from "@mui/material";
+import { Box, Chip, Divider, LinearProgress, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import type { RiskCardPayload } from "@/types/chat";
 
 interface RiskCardProps {
@@ -100,6 +100,45 @@ export default function RiskCard({ riskCard }: RiskCardProps) {
                 ))}
               </Box>
             ) : null}
+          </Box>
+        </>
+      ) : null}
+
+      {riskCard.barricade_recommendations?.length ? (
+        <>
+          <Divider />
+          <Box sx={{ px: 2, py: 1.5 }}>
+            <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1 }}>
+              <Typography fontFamily='"IBM Plex Mono", monospace' fontWeight={700} fontSize={12} letterSpacing="0.08em">
+                BARRICADE RECOMMENDATIONS
+              </Typography>
+              {riskCard.rainfall_expected_mm_per_hr != null ? (
+                <Chip
+                  label={`${riskCard.rainfall_expected_mm_per_hr} mm/hr · ${riskCard.rainfall_classification ?? "Heavy"}`}
+                  size="small"
+                  sx={{ backgroundColor: "#FFF0F2", color: "#9B1D2A", fontWeight: 700, fontSize: 11 }}
+                />
+              ) : null}
+            </Stack>
+            <Table size="small" sx={{ tableLayout: "fixed" }}>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#F7F9FC" }}>
+                  <TableCell sx={{ fontWeight: 700, width: "45%", borderBottom: "2px solid #D1DBE8", fontSize: 12 }}>Underpass / Junction</TableCell>
+                  <TableCell sx={{ fontWeight: 700, borderBottom: "2px solid #D1DBE8", fontSize: 12 }}>Trigger Reason</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {riskCard.barricade_recommendations.map((rec, i) => (
+                  <TableRow
+                    key={rec.underpass_name}
+                    sx={{ backgroundColor: i % 2 === 0 ? "#FFFFFF" : "#F7F9FC", "&:last-child td": { border: 0 } }}
+                  >
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13, verticalAlign: "top", py: 1 }}>{rec.underpass_name}</TableCell>
+                    <TableCell sx={{ fontSize: 13, color: "text.secondary", verticalAlign: "top", py: 1 }}>{rec.reason}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </Box>
         </>
       ) : null}

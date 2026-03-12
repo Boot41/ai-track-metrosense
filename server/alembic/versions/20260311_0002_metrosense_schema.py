@@ -63,7 +63,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["location_id"], ["location_master.location_id"]),
         sa.ForeignKeyConstraint(["ward_id"], ["location_master.location_id"]),
     )
-    op.create_index("ix_lake_reference_location_id", "lake_reference", ["location_id"], unique=False)
+    op.create_index(
+        "ix_lake_reference_location_id",
+        "lake_reference",
+        ["location_id"],
+        unique=False,
+    )
     op.create_index("ix_lake_reference_ward_id", "lake_reference", ["ward_id"], unique=False)
 
     op.create_table(
@@ -109,8 +114,16 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["location_id"], ["location_master.location_id"]),
         sa.ForeignKeyConstraint(["ward_id"], ["location_master.location_id"]),
     )
-    op.create_index("ix_air_quality_observation_location_id", "air_quality_observation", ["location_id"])
-    op.create_index("ix_air_quality_observation_observed_at", "air_quality_observation", ["observed_at"])
+    op.create_index(
+        "ix_air_quality_observation_location_id",
+        "air_quality_observation",
+        ["location_id"],
+    )
+    op.create_index(
+        "ix_air_quality_observation_observed_at",
+        "air_quality_observation",
+        ["observed_at"],
+    )
     op.create_index("ix_air_quality_observation_ward_id", "air_quality_observation", ["ward_id"])
 
     op.create_table(
@@ -250,7 +263,11 @@ def upgrade() -> None:
         "traffic_segment_observation",
         ["road_segment_id"],
     )
-    op.create_index("ix_traffic_segment_observation_ward_id", "traffic_segment_observation", ["ward_id"])
+    op.create_index(
+        "ix_traffic_segment_observation_ward_id",
+        "traffic_segment_observation",
+        ["ward_id"],
+    )
 
     op.create_table(
         "lake_hydrology",
@@ -309,7 +326,10 @@ def upgrade() -> None:
         sa.Column("error_flag", sa.Boolean(), nullable=False),
         sa.Column("error_detail", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.CheckConstraint("overall_confidence >= 0 AND overall_confidence <= 1", name="ck_audit_conf"),
+        sa.CheckConstraint(
+            "overall_confidence >= 0 AND overall_confidence <= 1",
+            name="ck_audit_conf",
+        ),
         sa.ForeignKeyConstraint(["session_id"], ["sessions.session_id"]),
         sa.ForeignKeyConstraint(["turn_id"], ["conversation_history.turn_id"]),
     )
@@ -332,12 +352,21 @@ def downgrade() -> None:
     op.drop_index("ix_lake_hydrology_lake_id", table_name="lake_hydrology")
     op.drop_table("lake_hydrology")
 
-    op.drop_index("ix_traffic_segment_observation_ward_id", table_name="traffic_segment_observation")
+    op.drop_index(
+        "ix_traffic_segment_observation_ward_id",
+        table_name="traffic_segment_observation",
+    )
     op.drop_index(
         "ix_traffic_segment_observation_road_segment_id", table_name="traffic_segment_observation"
     )
-    op.drop_index("ix_traffic_segment_observation_observed_at", table_name="traffic_segment_observation")
-    op.drop_index("ix_traffic_segment_observation_location_id", table_name="traffic_segment_observation")
+    op.drop_index(
+        "ix_traffic_segment_observation_observed_at",
+        table_name="traffic_segment_observation",
+    )
+    op.drop_index(
+        "ix_traffic_segment_observation_location_id",
+        table_name="traffic_segment_observation",
+    )
     op.drop_table("traffic_segment_observation")
 
     op.drop_index("ix_power_outage_event_ward_id", table_name="power_outage_event")

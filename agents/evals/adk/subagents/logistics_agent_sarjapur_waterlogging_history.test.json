@@ -1,0 +1,64 @@
+{
+  "eval_set_id": "logistics_agent_sarjapur_waterlogging_history",
+  "name": "adk/subagents/logistics_agent_sarjapur_waterlogging_history.test.json",
+  "description": "Logistics subagent summarises historical Sarjapur waterlogging impact on traffic using traffic records.",
+  "eval_cases": [
+    {
+      "eval_id": "logistics_agent_sarjapur_waterlogging_history",
+      "conversation": [
+        {
+          "invocation_id": "logistics-agent-sarjapur-waterlogging-history-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "How has waterlogging on Sarjapur Road historically impacted traffic and travel times?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Summarise the historical traffic conditions on Sarjapur Road corridor from the traffic records, noting any congestion severity patterns and their impact on travel times, particularly during rain events."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_traffic_corridor",
+                "args": { "corridor_name": "Sarjapur Road", "limit": 20 }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000033.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000033.0
+    }
+  ],
+  "creation_timestamp": 1740000033.0
+}

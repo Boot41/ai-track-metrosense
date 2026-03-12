@@ -1,0 +1,64 @@
+{
+  "eval_set_id": "infrastructure_agent_latest_resolved_outage",
+  "name": "adk/subagents/infrastructure_agent_latest_resolved_outage.test.json",
+  "description": "Infrastructure subagent retrieves and summarises the most recently resolved power outage in Hebbal.",
+  "eval_cases": [
+    {
+      "eval_id": "infrastructure_agent_latest_resolved_outage",
+      "conversation": [
+        {
+          "invocation_id": "infrastructure-agent-latest-resolved-outage-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What was the most recent resolved power outage in Hebbal and how long did it last?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Identify the most recently resolved power outage event for Hebbal from the outage records, report its duration, and note the probable cause if available in the data."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_power_outage_events",
+                "args": { "location_id": "Hebbal", "window_days": 30 }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000032.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000032.0
+    }
+  ],
+  "creation_timestamp": 1740000032.0
+}

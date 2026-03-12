@@ -1,0 +1,75 @@
+{
+  "eval_set_id": "fetch_document_section_drainage_plan_s2",
+  "name": "adk/tools/fetch_document_section_drainage_plan_s2.test.json",
+  "description": "Fetch the threshold-heavy Bellandur drainage plan section.",
+  "eval_cases": [
+    {
+      "eval_id": "fetch_document_section_drainage_plan_s2",
+      "conversation": [
+        {
+          "invocation_id": "fetch-document-section-drainage-plan-s2-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Fetch the Bellandur drainage threshold section from the BBMP drainage plan."
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-fetch-drainage-s2\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.6,\"data\":{\"summary\":\"The relevant BBMP drainage threshold section is section s2 of drainage_plan_bbmp_2019.\",\"details\":{\"document_id\":\"drainage_plan_bbmp_2019\",\"section_id\":\"s2\"},\"reasoning_chain\":\"Document indexes are used to locate the threshold-heavy drainage plan section before it is fetched.\"},\"citations\":[\"list_document_indexes (Bellandur)\",\"fetch_document_section (drainage_plan_bbmp_2019:s2)\"],\"data_freshness\":\"Document content is static filesystem data.\",\"context_used\":[\"document\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_document_indexes",
+                "args": {
+                  "document_type": "drainage_plan",
+                  "ward_name": "Bellandur",
+                  "contains_thresholds": true
+                }
+              },
+              {
+                "name": "fetch_document_section",
+                "args": {
+                  "document_id": "drainage_plan_bbmp_2019",
+                  "section_id": "s2"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000003.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000003.0
+    }
+  ],
+  "creation_timestamp": 1740000003.0
+}

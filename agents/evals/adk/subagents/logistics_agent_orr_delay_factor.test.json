@@ -1,0 +1,82 @@
+{
+  "eval_set_id": "logistics_agent_orr_delay_factor",
+  "name": "adk/subagents/logistics_agent_orr_delay_factor.test.json",
+  "description": "Logistics subagent reasons about ORR rain delay factor.",
+  "eval_cases": [
+    {
+      "eval_id": "logistics_agent_orr_delay_factor",
+      "conversation": [
+        {
+          "invocation_id": "logistics-agent-orr-delay-factor-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What delay factor should we expect on ORR if it rains 30mm tonight?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Estimate the ORR delay factor under 30mm rain using corridor conditions and documented delay multipliers."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_traffic_corridor",
+                "args": {
+                  "corridor_name": "ORR",
+                  "limit": 20
+                }
+              },
+              {
+                "name": "list_document_indexes",
+                "args": {
+                  "document_type": "flood_research",
+                  "ward_name": "Bellandur",
+                  "contains_thresholds": true
+                }
+              },
+              {
+                "name": "fetch_document_section",
+                "args": {
+                  "document_id": "bangalore_flood_study_2022",
+                  "section_id": "s4"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000021.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000021.0
+    }
+  ],
+  "creation_timestamp": 1740000021.0
+}

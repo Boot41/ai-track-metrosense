@@ -1,0 +1,67 @@
+{
+  "eval_set_id": "get_traffic_current_bellandur",
+  "name": "adk/tools/get_traffic_current_bellandur.test.json",
+  "description": "Current traffic lookup for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "get_traffic_current_bellandur",
+      "conversation": [
+        {
+          "invocation_id": "get-traffic-current-bellandur-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What is traffic like in Bellandur right now?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "{\"agent\":\"logistics_agent\",\"query_id\":\"eval-traffic-current\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"The latest Bellandur traffic conditions are summarized from the current traffic dataset.\",\"details\":{\"tool\":\"get_traffic_current\",\"location\":\"Bellandur\"},\"reasoning_chain\":\"\"},\"citations\":[\"get_traffic_current (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"traffic_current\"],\"errors\":[]}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_traffic_current",
+                "args": {
+                  "location_id": "Bellandur",
+                  "limit": 5
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000015.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000015.0
+    }
+  ],
+  "creation_timestamp": 1740000015.0
+}

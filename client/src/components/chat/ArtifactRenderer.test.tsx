@@ -18,4 +18,23 @@ describe("ArtifactRenderer", () => {
     expect(screen.getByText("Chart could not be rendered")).toBeInTheDocument();
     expect(screen.getByText("Unsafe chart description")).toBeInTheDocument();
   });
+
+  it("renders table artifacts as a table", () => {
+    render(
+      <ArtifactRenderer
+        artifact={{
+          type: "table",
+          title: "Bellandur Weather Comparison",
+          columns: ["Metric", "September 2025", "October 2025"],
+          rows: [["Avg Temp (C)", 23.3, 24.3]],
+          description: "Monthly comparison",
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("table", { name: "Bellandur Weather Comparison" })).toBeInTheDocument();
+    expect(screen.getByText("September 2025")).toBeInTheDocument();
+    expect(screen.getByText("24.3")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open table" })).toBeInTheDocument();
+  });
 });

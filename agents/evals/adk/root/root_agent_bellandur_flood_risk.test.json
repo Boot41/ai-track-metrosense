@@ -1,0 +1,80 @@
+{
+  "eval_set_id": "root_agent_bellandur_flood_risk",
+  "name": "adk/root/root_agent_bellandur_flood_risk.test.json",
+  "description": "Root-agent flood risk flow for Bellandur.",
+  "eval_cases": [
+    {
+      "eval_id": "root_agent_bellandur_flood_risk",
+      "conversation": [
+        {
+          "invocation_id": "root-agent-bellandur-flood-risk-turn-1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "What is the flood risk in Bellandur tonight?"
+              }
+            ]
+          },
+          "final_response": {
+            "role": null,
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Provide a Bellandur flood-risk summary with rainfall, incident context, and a freshness caveat."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "resolve_location",
+                "args": {
+                  "name": "Bellandur"
+                }
+              },
+              {
+                "name": "get_weather_current",
+                "args": {
+                  "location_id": "Bellandur",
+                  "limit": 1
+                }
+              },
+              {
+                "name": "get_flood_incidents",
+                "args": {
+                  "location_id": "Bellandur",
+                  "limit": 20
+                }
+              }
+            ],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1740000027.0
+        }
+      ],
+      "session_input": {
+        "app_name": "metrosense_agent",
+        "user_id": "metrosense-eval-user",
+        "state": {}
+      },
+      "creation_timestamp": 1740000027.0
+    }
+  ],
+  "creation_timestamp": 1740000027.0
+}
