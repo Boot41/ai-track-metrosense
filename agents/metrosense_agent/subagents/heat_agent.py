@@ -14,6 +14,7 @@ from ..tools.shared.document_tools import fetch_document_section, list_document_
 from ..tools.shared.weather_tools import (
     get_weather_current,
     get_weather_extremes,
+    get_weather_historical,
     get_weather_summary,
 )
 
@@ -29,6 +30,7 @@ heat_health_agent = Agent(
         get_aqi_historical,
         get_aqi_summary,
         get_weather_current,
+        get_weather_historical,
         get_weather_summary,
         get_weather_extremes,
         get_ward_profile,
