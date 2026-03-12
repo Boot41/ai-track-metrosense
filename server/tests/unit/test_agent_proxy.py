@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
+
 from app.core.config import Settings
 from app.services import agent_proxy
 

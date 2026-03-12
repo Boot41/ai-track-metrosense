@@ -3,11 +3,12 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
+from httpx import AsyncClient
+
 from app.api.deps import require_user
 from app.db.models import User
 from app.main import app
 from app.services import agent_proxy, conversation_service
-from httpx import AsyncClient
 
 
 @pytest.fixture

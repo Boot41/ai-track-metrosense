@@ -7,10 +7,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
 import app.db.models  # noqa: F401 — register all models
-from alembic import context
 from app.core.config import get_settings
 from app.db.base import Base
 

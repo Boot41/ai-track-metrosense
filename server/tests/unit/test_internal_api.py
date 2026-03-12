@@ -3,11 +3,12 @@ from __future__ import annotations
 from collections.abc import Generator
 
 import pytest
+from httpx import AsyncClient
+
 from app.api.deps import db_session, settings
 from app.core.config import Settings
 from app.main import app
 from app.services import data_service
-from httpx import AsyncClient
 
 
 @pytest.fixture
