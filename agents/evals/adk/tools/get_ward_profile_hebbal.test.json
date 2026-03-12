@@ -20,7 +20,7 @@
             "role": "model",
             "parts": [
               {
-                "text": "Summarize the Hebbal ward profile using ward_001, including exposure or vulnerability context if present."
+                "text": "{\"agent\":\"heat_health_agent\",\"query_id\":\"eval-ward-profile\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"The Hebbal ward profile is summarized using ward_001, including vulnerability context when available.\",\"details\":{\"tool\":\"get_ward_profile\",\"ward_id\":\"ward_001\"},\"health_advisory\":\"Use ward vulnerability context to tailor any health recommendation.\"},\"citations\":[\"get_ward_profile (ward_001)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"ward_profile\"],\"errors\":[]}"
               }
             ]
           },

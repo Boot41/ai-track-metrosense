@@ -20,7 +20,7 @@
             "role": "model",
             "parts": [
               {
-                "text": "Summarize recent Hebbal outage events, including whether there were active or recent feeder disruptions."
+                "text": "{\"agent\":\"infrastructure_agent\",\"query_id\":\"eval-outages\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"Recent Hebbal outage events are summarized, including whether there are active or recent feeder disruptions.\",\"details\":{\"tool\":\"get_power_outage_events\",\"location\":\"Hebbal\"},\"reasoning_chain\":\"\"},\"citations\":[\"get_power_outage_events (Hebbal)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"power_outages\"],\"errors\":[]}"
               }
             ]
           },

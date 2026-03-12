@@ -20,7 +20,7 @@
             "role": "model",
             "parts": [
               {
-                "text": "Provide a month-wise Bellandur weather summary for 2025 using the weather summary dataset."
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-weather-summary\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"A month-wise Bellandur weather summary for 2025 is returned from the weather summary dataset.\",\"details\":{\"tool\":\"get_weather_summary\",\"location\":\"Bellandur\"},\"reasoning_chain\":\"\"},\"citations\":[\"get_weather_summary (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"weather\"],\"errors\":[]}"
               }
             ]
           },

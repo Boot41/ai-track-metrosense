@@ -132,9 +132,21 @@ REGISTRY: tuple[EvalTarget, ...] = (
         agent_name="flood_vulnerability_agent",
     ),
     EvalTarget(
+        case_id="flood_vulnerability_agent_future_data_gap",
+        layer="subagents",
+        rel_path="adk/subagents/flood_vulnerability_agent_future_data_gap.test.json",
+        agent_name="flood_vulnerability_agent",
+    ),
+    EvalTarget(
         case_id="heat_health_agent_weekly_aqi",
         layer="subagents",
         rel_path="adk/subagents/heat_health_agent_weekly_aqi.test.json",
+        agent_name="heat_health_agent",
+    ),
+    EvalTarget(
+        case_id="heat_health_agent_future_data_gap",
+        layer="subagents",
+        rel_path="adk/subagents/heat_health_agent_future_data_gap.test.json",
         agent_name="heat_health_agent",
     ),
     EvalTarget(
@@ -144,15 +156,22 @@ REGISTRY: tuple[EvalTarget, ...] = (
         agent_name="infrastructure_agent",
     ),
     EvalTarget(
+        case_id="infrastructure_agent_latest_resolved_outage",
+        layer="subagents",
+        rel_path="adk/subagents/infrastructure_agent_latest_resolved_outage.test.json",
+        agent_name="infrastructure_agent",
+    ),
+    EvalTarget(
         case_id="logistics_agent_orr_delay_factor",
         layer="subagents",
         rel_path="adk/subagents/logistics_agent_orr_delay_factor.test.json",
         agent_name="logistics_agent",
     ),
     EvalTarget(
-        case_id="root_agent_greeting_only",
-        layer="root",
-        rel_path="adk/root/root_agent_greeting_only.test.json",
+        case_id="logistics_agent_sarjapur_waterlogging_history",
+        layer="subagents",
+        rel_path="adk/subagents/logistics_agent_sarjapur_waterlogging_history.test.json",
+        agent_name="logistics_agent",
     ),
     EvalTarget(
         case_id="root_agent_greeting_with_question",
@@ -160,24 +179,14 @@ REGISTRY: tuple[EvalTarget, ...] = (
         rel_path="adk/root/root_agent_greeting_with_question.test.json",
     ),
     EvalTarget(
-        case_id="root_agent_off_domain_refusal",
-        layer="root",
-        rel_path="adk/root/root_agent_off_domain_refusal.test.json",
-    ),
-    EvalTarget(
-        case_id="root_agent_prompt_injection_refusal",
-        layer="root",
-        rel_path="adk/root/root_agent_prompt_injection_refusal.test.json",
-    ),
-    EvalTarget(
-        case_id="root_agent_location_not_found",
-        layer="root",
-        rel_path="adk/root/root_agent_location_not_found.test.json",
-    ),
-    EvalTarget(
         case_id="root_agent_bellandur_flood_risk",
         layer="root",
         rel_path="adk/root/root_agent_bellandur_flood_risk.test.json",
+    ),
+    EvalTarget(
+        case_id="root_agent_off_domain_refusal",
+        layer="root",
+        rel_path="adk/root/root_agent_off_domain_refusal.test.json",
     ),
 )
 

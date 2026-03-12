@@ -20,7 +20,7 @@
             "role": "model",
             "parts": [
               {
-                "text": "Relevant Bellandur references with thresholds include the Bangalore flood study and the BBMP drainage plan."
+                "text": "{\"response_mode\":\"text\",\"response_text\":\"Relevant Bellandur threshold references include the Bangalore flood study and the BBMP drainage plan.\",\"citations_summary\":[{\"source\":\"list_document_indexes (Bellandur thresholds)\"}],\"data_freshness_summary\":{\"note\":\"Document indexes are static filesystem references.\"},\"risk_card\":null,\"artifact\":null,\"follow_up_prompt\":null}"
               }
             ]
           },

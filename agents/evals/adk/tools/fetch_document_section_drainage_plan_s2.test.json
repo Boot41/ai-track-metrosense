@@ -20,7 +20,7 @@
             "role": "model",
             "parts": [
               {
-                "text": "The relevant BBMP drainage plan threshold section is section s2 of drainage_plan_bbmp_2019."
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-fetch-drainage-s2\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.6,\"data\":{\"summary\":\"The relevant BBMP drainage threshold section is section s2 of drainage_plan_bbmp_2019.\",\"details\":{\"document_id\":\"drainage_plan_bbmp_2019\",\"section_id\":\"s2\"},\"reasoning_chain\":\"Document indexes are used to locate the threshold-heavy drainage plan section before it is fetched.\"},\"citations\":[\"list_document_indexes (Bellandur)\",\"fetch_document_section (drainage_plan_bbmp_2019:s2)\"],\"data_freshness\":\"Document content is static filesystem data.\",\"context_used\":[\"document\"],\"errors\":[]}"
               }
             ]
           },

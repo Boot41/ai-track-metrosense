@@ -20,7 +20,7 @@
             "role": "model",
             "parts": [
               {
-                "text": "Summarize Bellandur weather history for the last 30 days using the historical weather series."
+                "text": "{\"agent\":\"flood_vulnerability_agent\",\"query_id\":\"eval-weather-historical\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"Bellandur weather history over the last 30 days is summarized from the historical weather series.\",\"details\":{\"tool\":\"get_weather_historical\",\"location\":\"Bellandur\",\"hours\":720},\"reasoning_chain\":\"\"},\"citations\":[\"get_weather_historical (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"weather\"],\"errors\":[]}"
               }
             ]
           },

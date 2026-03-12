@@ -423,7 +423,7 @@ async def _insert_rows(
         for row in raw_batch:
             normalized_row: dict[str, Any] = {}
             for key, value in row.items():
-                if isinstance(value, (list, dict)):
+                if isinstance(value, list | dict):
                     normalized_row[key] = json.dumps(value)
                 else:
                     normalized_row[key] = value

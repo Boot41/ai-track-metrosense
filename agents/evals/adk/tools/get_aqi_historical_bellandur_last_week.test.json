@@ -20,7 +20,7 @@
             "role": "model",
             "parts": [
               {
-                "text": "Summarize Bellandur AQI history over the last week and call out the worst period."
+                "text": "{\"agent\":\"heat_health_agent\",\"query_id\":\"eval-aqi-historical\",\"timestamp\":\"2026-03-10T00:00:00Z\",\"status\":\"ok\",\"confidence\":0.8,\"data\":{\"summary\":\"Bellandur AQI history over the last week is summarized, including the worst period in the returned window.\",\"details\":{\"tool\":\"get_aqi_historical\",\"location\":\"Bellandur\",\"days\":7},\"health_advisory\":\"Highlight the worst AQI period and any practical exposure implication.\"},\"citations\":[\"get_aqi_historical (Bellandur)\"],\"data_freshness\":\"Use tool metadata for freshness.\",\"context_used\":[\"aqi\"],\"errors\":[]}"
               }
             ]
           },
