@@ -1,4 +1,4 @@
-User: Now time to build the actual agents the one we built is a simple for just testing, now the actual agent with guard rails, tools and calls and session and context and the subagent delgation and we need to build this. Also data fetching from the backend needs to implemneted that is the gap we will fill it before we implement it. Ask doubts if u have any doubts in technicality design or anything 
+User: Now time to build the actual agents the one we built is a simple for just testing, now the actual agent with guard rails, tools and calls and session and context and the subagent delgation and we need to build this. Also data fetching from the backend needs to implemneted that is the gap we will fill it before we implement it. Ask doubts if u have any doubts in technicality design or anything
 
 GitHub Copilot: Explore agents and server codebase
 
@@ -140,18 +140,18 @@ Currently `agent_app_name = "metrosearch_agent"` in backend config. Once we rest
 
 User: 1. Option B
 2.Mount Documents_Metrosense as a shared volume and configure the path in agents via env var
-3. THe DB will filled with the data when the DB is up running 
+3. THe DB will filled with the data when the DB is up running
 4. No sse stick to non-streaming
-5. Yes use the in memory session but we need to persist the changes in DB as well 
+5. Yes use the in memory session but we need to persist the changes in DB as well
 6. name would be root_agent
 
-GitHub Copilot: Got it. Let me read the migration and models files to understand the exact schema before starting, then I'll implement everything. 
+GitHub Copilot: Got it. Let me read the migration and models files to understand the exact schema before starting, then I'll implement everything.
 
 Created 11 todos
 
 Searched for files matching `**/server/alembic/versions/*.py`, 4 matches
 
-User: Create a plan wrie a AGENT_SPEC.md file for implementing 
+User: Create a plan wrie a AGENT_SPEC.md file for implementing
 
 GitHub Copilot: Read [](file:///home/dell/ai-track-metrosense/server/alembic/versions/20260311_0002_metrosense_schema.py#1-1), lines 1 to 200
 
@@ -163,7 +163,7 @@ Read [](file:///home/dell/ai-track-metrosense/agents)
 
 Read [](file:///home/dell/ai-track-metrosense/agents/.env.example)
 
-Now I have everything I need. Let me write the spec. 
+Now I have everything I need. Let me write the spec.
 
 Created [](file:///home/dell/ai-track-metrosense/POQ/Agents/AGENT_IMPLEMENTATION_SPEC.md)
 
