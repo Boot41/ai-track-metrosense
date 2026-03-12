@@ -62,11 +62,7 @@ def _extract_message_from_events(events: list[dict[str, Any]]) -> str:
 
 
 _FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)```", re.DOTALL)
-_LEGACY_SUMMARY_RE = re.compile(
-    r"^\s*summary:\s*(?P<summary>.+?)\.\s*details:\s*(?P<details>\{[\s\S]*\})"
-    r"(?:\.\s*health_advisory:\s*(?P<health>.+))?\s*$",
-    re.IGNORECASE,
-)
+_LEGACY_SECTION_RE = re.compile(r"\b(summary|details|health_advisory)\s*:", re.IGNORECASE)
 
 
 def _normalise_freshness(value: Any) -> dict[str, Any]:
@@ -263,6 +259,8 @@ def _strip_fences(text: str) -> str:
 
 
 def _prettify_metric_name(key: str) -> str:
+    if " " in key or "(" in key or ")" in key:
+        return key.strip()
     return key.replace("_", " ").strip().title()
 
 
@@ -329,7 +327,7 @@ def _build_table_artifact_from_row_dicts(
 
     rows: list[list[Any]] = []
     for metric_key in metric_keys:
-        row: list[Any] = [metric_key]
+        row: list[Any] = [_prettify_metric_name(metric_key)]
         for row_data in rows_data:
             row.append(_format_table_value(row_data.get(metric_key)))
         rows.append(row)
@@ -343,11 +341,180 @@ def _build_table_artifact_from_row_dicts(
     }
 
 
+def _build_table_artifact_from_columnar_dict(
+    table_data: dict[str, Any], title: str
+) -> dict[str, Any] | None:
+    metric_column = table_data.get("Metric")
+    if not isinstance(metric_column, list) or len(metric_column) == 0:
+        return None
+
+    period_columns = [
+        key
+        for key, value in table_data.items()
+        if key != "Metric" and isinstance(key, str) and isinstance(value, list)
+    ]
+    if len(period_columns) < 2:
+        return None
+
+    rows: list[list[Any]] = []
+    for index, metric in enumerate(metric_column):
+        row: list[Any] = [_format_table_value(metric)]
+        for period in period_columns:
+            values = table_data[period]
+            assert isinstance(values, list)
+            row.append(_format_table_value(values[index] if index < len(values) else None))
+        rows.append(row)
+
+    return {
+        "type": "table",
+        "title": title,
+        "columns": ["Metric", *period_columns],
+        "rows": rows,
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
+
+
+def _build_table_artifact_from_month_column_dict(
+    table_data: dict[str, Any], title: str
+) -> dict[str, Any] | None:
+    month_column = table_data.get("Month")
+    if not isinstance(month_column, list) or len(month_column) < 2:
+        return None
+
+    metric_keys = [
+        key
+        for key, value in table_data.items()
+        if key != "Month" and isinstance(key, str) and isinstance(value, list)
+    ]
+    if not metric_keys:
+        return None
+
+    rows: list[list[Any]] = []
+    for metric_key in metric_keys:
+        values = table_data[metric_key]
+        assert isinstance(values, list)
+        row: list[Any] = [_prettify_metric_name(metric_key)]
+        for index in range(len(month_column)):
+            row.append(_format_table_value(values[index] if index < len(values) else None))
+        rows.append(row)
+
+    return {
+        "type": "table",
+        "title": title,
+        "columns": ["Metric", *[_format_table_value(item) for item in month_column]],
+        "rows": rows,
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
+
+
+def _build_table_artifact_from_headers_rows_dict(
+    table_data: dict[str, Any], title: str
+) -> dict[str, Any] | None:
+    headers = table_data.get("headers")
+    rows = table_data.get("rows")
+    if (
+        not isinstance(headers, list)
+        or len(headers) < 3
+        or not all(isinstance(item, str) for item in headers)
+    ):
+        return None
+    if not isinstance(rows, list) or not rows:
+        return None
+    if not all(isinstance(row, list) for row in rows):
+        return None
+
+    normalised_rows = [[_format_table_value(cell) for cell in row] for row in rows]
+    return {
+        "type": "table",
+        "title": title,
+        "columns": headers,
+        "rows": normalised_rows,
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
+
+
+def _build_table_artifact_from_metric_rows(
+    rows_data: list[dict[str, Any]], title: str
+) -> dict[str, Any] | None:
+    if len(rows_data) < 2:
+        return None
+    if not all(isinstance(row.get("Metric"), str) for row in rows_data):
+        return None
+
+    period_columns: list[str] = []
+    for row in rows_data:
+        for key in row.keys():
+            if key == "Metric" or key in period_columns:
+                continue
+            period_columns.append(key)
+
+    if len(period_columns) < 2:
+        return None
+
+    rows: list[list[Any]] = []
+    for row_data in rows_data:
+        row = [_format_table_value(row_data.get("Metric"))]
+        for period in period_columns:
+            row.append(_format_table_value(row_data.get(period)))
+        rows.append(row)
+
+    return {
+        "type": "table",
+        "title": title,
+        "columns": ["Metric", *period_columns],
+        "rows": rows,
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
+
+
+def _build_table_artifact_from_period_dicts(
+    table_data: dict[str, Any], title: str
+) -> dict[str, Any] | None:
+    periods = [
+        key for key, value in table_data.items() if isinstance(key, str) and isinstance(value, dict)
+    ]
+    if len(periods) < 2:
+        return None
+
+    metric_keys: list[str] = []
+    for period in periods:
+        values = table_data[period]
+        assert isinstance(values, dict)
+        for key, value in values.items():
+            if isinstance(value, dict | list):
+                return None
+            if key not in metric_keys:
+                metric_keys.append(key)
+
+    rows: list[list[Any]] = []
+    for metric_key in metric_keys:
+        row: list[Any] = [_prettify_metric_name(metric_key)]
+        for period in periods:
+            values = table_data[period]
+            assert isinstance(values, dict)
+            row.append(_format_table_value(values.get(metric_key)))
+        rows.append(row)
+
+    return {
+        "type": "table",
+        "title": title,
+        "columns": ["Metric", *periods],
+        "rows": rows,
+        "description": "Month-over-month comparison generated from MetroSense weather summaries.",
+    }
+
+
 def _build_table_artifact_from_details(
     details: dict[str, Any], title: str
 ) -> dict[str, Any] | None:
     comparison_table = details.get("comparison_table")
     if isinstance(comparison_table, list) and comparison_table:
+        artifact = _build_table_artifact_from_metric_rows(
+            [item for item in comparison_table if isinstance(item, dict)],
+            title=title,
+        )
+        if artifact is not None:
+            return artifact
         artifact = _build_table_artifact_from_month_blocks(
             [item for item in comparison_table if isinstance(item, dict) and "month" in item],
             title=title,
@@ -357,8 +524,36 @@ def _build_table_artifact_from_details(
 
     for detail_key, detail_value in details.items():
         if isinstance(detail_key, str) and isinstance(detail_value, list):
+            artifact_title = (
+                title if detail_key.strip().lower() in {"table", "rows"} else detail_key
+            )
             artifact = _build_table_artifact_from_row_dicts(
                 [item for item in detail_value if isinstance(item, dict)],
+                title=artifact_title,
+            )
+            if artifact is not None:
+                return artifact
+        if isinstance(detail_key, str) and isinstance(detail_value, dict):
+            artifact = _build_table_artifact_from_headers_rows_dict(
+                detail_value,
+                title=detail_key,
+            )
+            if artifact is not None:
+                return artifact
+            artifact = _build_table_artifact_from_month_column_dict(
+                detail_value,
+                title=detail_key,
+            )
+            if artifact is not None:
+                return artifact
+            artifact = _build_table_artifact_from_columnar_dict(
+                detail_value,
+                title=detail_key,
+            )
+            if artifact is not None:
+                return artifact
+            artifact = _build_table_artifact_from_period_dicts(
+                detail_value,
                 title=detail_key,
             )
             if artifact is not None:
@@ -443,14 +638,50 @@ def _normalise_artifact(value: Any) -> dict[str, Any] | None:
     return None
 
 
-def _parse_legacy_summary_details(raw_text: str, session_id: str) -> dict[str, Any] | None:
-    match = _LEGACY_SUMMARY_RE.match(raw_text.strip())
-    if not match:
+def _extract_legacy_summary_sections(raw_text: str) -> tuple[str, str, str | None] | None:
+    matches = list(_LEGACY_SECTION_RE.finditer(raw_text))
+    if len(matches) < 2:
         return None
 
-    summary = match.group("summary").strip()
-    details_text = match.group("details").strip()
-    health_advisory = match.group("health")
+    summary_match = next((match for match in matches if match.group(1).lower() == "summary"), None)
+    details_match = next((match for match in matches if match.group(1).lower() == "details"), None)
+    if (
+        summary_match is None
+        or details_match is None
+        or summary_match.start() >= details_match.start()
+    ):
+        return None
+
+    health_match = next(
+        (
+            match
+            for match in matches
+            if match.group(1).lower() == "health_advisory" and match.start() > details_match.start()
+        ),
+        None,
+    )
+
+    summary = raw_text[summary_match.end() : details_match.start()].strip()
+    summary = re.sub(r"(?:\s*\.)+\s*$", "", summary).strip()
+    details_end = health_match.start() if health_match is not None else len(raw_text)
+    details = raw_text[details_match.end() : details_end].strip()
+    details = re.sub(r"\s*\.+\s*$", "", details).strip()
+
+    health = None
+    if health_match is not None:
+        health = raw_text[health_match.end() :].strip()
+
+    if not summary or not details:
+        return None
+    return summary, details, health or None
+
+
+def _parse_legacy_summary_details(raw_text: str, session_id: str) -> dict[str, Any] | None:
+    sections = _extract_legacy_summary_sections(raw_text)
+    if sections is None:
+        return None
+
+    summary, details_text, health_advisory = sections
 
     try:
         details = ast.literal_eval(details_text)
@@ -460,6 +691,25 @@ def _parse_legacy_summary_details(raw_text: str, session_id: str) -> dict[str, A
     if not isinstance(details, dict):
         return None
 
+    return _build_summary_details_payload(
+        session_id=session_id,
+        summary=summary,
+        details=details,
+        health_advisory=health_advisory,
+    )
+
+
+def _build_summary_details_payload(
+    *,
+    session_id: str,
+    summary: str,
+    details: dict[str, Any],
+    health_advisory: Any = None,
+    citations_summary: list[dict[str, Any]] | None = None,
+    data_freshness_summary: dict[str, Any] | None = None,
+    risk_card: dict[str, Any] | None = None,
+    follow_up_prompt: Any = None,
+) -> dict[str, Any] | None:
     artifact = _build_table_artifact_from_details(details, title="Weather Comparison")
     if artifact is None:
         return None
@@ -472,11 +722,11 @@ def _parse_legacy_summary_details(raw_text: str, session_id: str) -> dict[str, A
         "session_id": session_id,
         "response_mode": "text",
         "response_text": response_text,
-        "citations_summary": [],
-        "data_freshness_summary": {},
-        "risk_card": None,
+        "citations_summary": citations_summary or [],
+        "data_freshness_summary": data_freshness_summary or {},
+        "risk_card": risk_card,
         "artifact": artifact,
-        "follow_up_prompt": None,
+        "follow_up_prompt": follow_up_prompt,
         "message": response_text,
     }
 
@@ -541,36 +791,38 @@ def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
     try:
         parsed = json.loads(json_candidate)
     except json.JSONDecodeError:
-        legacy_payload = _parse_legacy_summary_details(raw_text, session_id)
-        if legacy_payload is not None:
-            return legacy_payload
-        return default_payload
+        try:
+            parsed = ast.literal_eval(json_candidate)
+        except (ValueError, SyntaxError):
+            legacy_payload = _parse_legacy_summary_details(raw_text, session_id)
+            if legacy_payload is not None:
+                return legacy_payload
+            return default_payload
 
     if not isinstance(parsed, dict):
         return default_payload
 
     summary = parsed.get("summary")
     details = parsed.get("details")
+    if isinstance(summary, str) and isinstance(details, str):
+        try:
+            details = ast.literal_eval(details)
+        except (ValueError, SyntaxError):
+            details = None
+
     if isinstance(summary, str) and isinstance(details, dict):
-        artifact = _build_table_artifact_from_details(details, title="Weather Comparison")
-        if artifact is not None:
-            health_advisory = parsed.get("health_advisory")
-            response_text = summary
-            if isinstance(health_advisory, str) and health_advisory.strip():
-                response_text = f"{summary}\n\nHealth note: {health_advisory.strip()}"
-            return {
-                "session_id": session_id,
-                "response_mode": "text",
-                "response_text": response_text,
-                "citations_summary": _normalise_citations(parsed.get("citations_summary", [])),
-                "data_freshness_summary": _normalise_freshness(
-                    parsed.get("data_freshness_summary")
-                ),
-                "risk_card": _normalise_risk_card(parsed.get("risk_card")),
-                "artifact": artifact,
-                "follow_up_prompt": parsed.get("follow_up_prompt"),
-                "message": response_text,
-            }
+        summary_details_payload = _build_summary_details_payload(
+            session_id=session_id,
+            summary=summary,
+            details=details,
+            health_advisory=parsed.get("health_advisory"),
+            citations_summary=_normalise_citations(parsed.get("citations_summary", [])),
+            data_freshness_summary=_normalise_freshness(parsed.get("data_freshness_summary")),
+            risk_card=_normalise_risk_card(parsed.get("risk_card")),
+            follow_up_prompt=parsed.get("follow_up_prompt"),
+        )
+        if summary_details_payload is not None:
+            return summary_details_payload
 
     top_level_artifact = _build_table_artifact_from_top_level_comparison(
         parsed,
@@ -595,6 +847,13 @@ def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
     # --- Level-2 shape: has response_text directly ---
     response_text = parsed.get("response_text")
     if isinstance(response_text, str) and response_text.strip():
+        normalised_artifact = _normalise_artifact(parsed.get("artifact"))
+        if normalised_artifact is None:
+            embedded_legacy_payload = _parse_legacy_summary_details(response_text, session_id)
+            if embedded_legacy_payload is not None:
+                response_text = embedded_legacy_payload["response_text"]
+                normalised_artifact = embedded_legacy_payload["artifact"]
+
         return {
             "session_id": session_id,
             "response_mode": parsed.get("response_mode", "text"),
@@ -602,7 +861,7 @@ def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
             "citations_summary": _normalise_citations(parsed.get("citations_summary", [])),
             "data_freshness_summary": _normalise_freshness(parsed.get("data_freshness_summary")),
             "risk_card": _normalise_risk_card(parsed.get("risk_card")),
-            "artifact": _normalise_artifact(parsed.get("artifact")),
+            "artifact": normalised_artifact,
             "follow_up_prompt": parsed.get("follow_up_prompt"),
             "message": response_text,
         }
@@ -610,6 +869,21 @@ def _parse_level2_payload(raw_text: str, session_id: str) -> dict[str, Any]:
     # --- Level-1 shape: agent/status/data/errors/confidence ---
     level1_keys = {"agent", "status", "data", "errors", "confidence", "query_id"}
     if level1_keys & parsed.keys():
+        data = parsed.get("data")
+        if isinstance(data, dict):
+            summary = data.get("summary")
+            details = data.get("details")
+            if isinstance(summary, str) and isinstance(details, dict):
+                summary_details_payload = _build_summary_details_payload(
+                    session_id=session_id,
+                    summary=summary,
+                    details=details,
+                    health_advisory=data.get("health_advisory"),
+                    citations_summary=_normalise_citations(parsed.get("citations", [])),
+                    data_freshness_summary=_normalise_freshness(parsed.get("data_freshness")),
+                )
+                if summary_details_payload is not None:
+                    return summary_details_payload
         synthesized = _synthesize_from_level1(parsed)
         if synthesized:
             return {
