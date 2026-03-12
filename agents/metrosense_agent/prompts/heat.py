@@ -49,10 +49,16 @@ get_weather_extremes:
   THIS IS THE RIGHT TOOL for any "extreme day / worst day / which area was hottest" query.
 
 Other tools:
+resolve_location:
+  ALWAYS call this first when you only have a neighbourhood name (e.g. "Bellandur").
+  It returns a list; pick the entry whose location_type is "ward" to get the
+  canonical ward_id (e.g. "ward_007"). Never guess or invent a ward_id.
+
 get_ward_profile:
-  Pass ward_id (e.g. "ward_007"). Use for population density, vulnerability context,
-  sensitive population counts (elderly, children, respiratory patients).
-  Always call this for health advisory questions.
+  Pass the ward_id returned by resolve_location (e.g. "ward_007").
+  Use for population density, vulnerability context, sensitive population counts
+  (elderly, children, respiratory patients).
+  Always call this for health advisory questions. Always resolve ward_id first.
 
 list_document_indexes / fetch_document_section:
   Use for: AQI health threshold guidelines, Urban Heat Island research,
@@ -64,7 +70,8 @@ QUESTION TYPE HANDLING
 
 TYPE 1 - DIRECT LOOKUP ("What is AQI in Peenya right now?"):
   Call get_aqi_current. Report aqi_value, aqi_category, dominant_pollutant.
-  If health context needed, also call get_ward_profile for vulnerable population size.
+  If health context needed: first call resolve_location to get ward_id, then call
+  get_ward_profile(ward_id) for vulnerable population size.
   Always note which pollutant is dominant and its specific health implication.
 
 TYPE 2 - HISTORICAL ANALYSIS:
@@ -88,17 +95,19 @@ TYPE 2 - HISTORICAL ANALYSIS:
     -> Identify warmest/coolest months, state seasonal pattern clearly
 
 TYPE 3 - PREDICTIVE / COMPOUND ("How will today's heat affect elderly residents in Jayanagar?"):
-  Step 1 - Get current conditions: get_weather_current (temperature_celsius, humidity_pct)
+  Step 1 - Resolve location: call resolve_location(name) and extract ward_id from
+    the entry where location_type == "ward".
+  Step 2 - Get current conditions: get_weather_current (temperature_celsius, humidity_pct)
     and get_aqi_current for the ward.
-  Step 2 - Get population context: get_ward_profile for vulnerable population count.
-  Step 3 - Fetch health threshold documents: list_document_indexes, then fetch the
-    AQI health advisory section and UHI/heat stress threshold section.
-  Step 4 - Reason through health risk:
+  Step 3 - Get population context: get_ward_profile(ward_id) for vulnerable population count.
+  Step 4 - Fetch health threshold documents: list_document_indexes, then fetch the
+      AQI health advisory section and UHI/heat stress threshold section.
+  Step 5 - Reason through health risk:
     Temperature + humidity -> Heat Index (apparent temperature)
     Current AQI category -> respiratory risk tier
     Ward vulnerability profile -> at-risk population size
     Document thresholds -> specific health advisory triggers
-  Step 5 - State advisory: specific health recommendations for sensitive groups,
+  Step 6 - State advisory: specific health recommendations for sensitive groups,
     recommended actions (avoid outdoor activity, time windows, precautions).
 
 Urban Heat Island (UHI) reasoning pattern:
