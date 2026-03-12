@@ -319,8 +319,8 @@ def _build_table_artifact_from_row_dicts(
         str(row.get(row_label_key, f"Period {index + 1}")) for index, row in enumerate(rows_data)
     ]
     metric_keys: list[str] = []
-    for row in rows_data:
-        for key in row.keys():
+    for row_data in rows_data:
+        for key in row_data.keys():
             if key == row_label_key or key in metric_keys:
                 continue
             metric_keys.append(key)
@@ -442,8 +442,8 @@ def _build_table_artifact_from_metric_rows(
         return None
 
     period_columns: list[str] = []
-    for row in rows_data:
-        for key in row.keys():
+    for row_data in rows_data:
+        for key in row_data.keys():
             if key == "Metric" or key in period_columns:
                 continue
             period_columns.append(key)
@@ -453,7 +453,7 @@ def _build_table_artifact_from_metric_rows(
 
     rows: list[list[Any]] = []
     for row_data in rows_data:
-        row = [_format_table_value(row_data.get("Metric"))]
+        row: list[Any] = [_format_table_value(row_data.get("Metric"))]
         for period in period_columns:
             row.append(_format_table_value(row_data.get(period)))
         rows.append(row)

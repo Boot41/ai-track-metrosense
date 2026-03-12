@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from datetime import UTC, datetime
 
 import pytest
@@ -12,7 +13,7 @@ from app.services import agent_proxy, conversation_service
 
 
 @pytest.fixture
-def auth_override() -> None:
+def auth_override() -> Generator[None, None, None]:
     app.dependency_overrides[require_user] = lambda: User(
         id=1,
         email="test@example.com",

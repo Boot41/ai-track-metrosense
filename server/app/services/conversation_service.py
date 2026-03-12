@@ -114,7 +114,7 @@ async def list_sessions(
         .limit(limit)
         .offset(offset)
     )
-    return (await session.execute(stmt)).scalars().all()
+    return list((await session.execute(stmt)).scalars().all())
 
 
 async def list_session_messages(
@@ -134,5 +134,5 @@ async def list_session_messages(
         .where(ConversationHistory.session_id == session_id)
         .order_by(ConversationHistory.timestamp.asc())
     )
-    messages = (await session.execute(history_stmt)).scalars().all()
+    messages = list((await session.execute(history_stmt)).scalars().all())
     return owned_session, messages

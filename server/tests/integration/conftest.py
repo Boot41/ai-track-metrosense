@@ -4,7 +4,8 @@ import os
 import socket
 import threading
 import time
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
+from typing import Any
 
 import pytest
 import uvicorn
@@ -39,7 +40,7 @@ def _create_test_app() -> FastAPI:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def agent_server() -> None:
+def agent_server() -> Generator[None, None, None]:
     os.environ["AGENT_SERVER_URL"] = f"http://{AGENT_HOST}:{AGENT_PORT}"
     os.environ["AGENT_INTERNAL_TOKEN"] = "test-internal-token"
     os.environ["JWT_SECRET"] = "test-secret-at-least-32-bytes-long"
@@ -62,7 +63,7 @@ def agent_server() -> None:
 
 
 @pytest.fixture
-async def engine():  # type: ignore[no-untyped-def]
+async def engine() -> AsyncGenerator[Any, None]:
     settings = get_settings()
     eng = create_async_engine(settings.effective_db_url, echo=False)
     async with eng.begin() as conn:
@@ -74,18 +75,22 @@ async def engine():  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-async def session_factory(engine):  # type: ignore[no-untyped-def]
+async def session_factory(engine: Any) -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(engine, expire_on_commit=False)
 
 
 @pytest.fixture
-async def db(session_factory):  # type: ignore[no-untyped-def]
+async def db(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> AsyncGenerator[AsyncSession, None]:
     async with session_factory() as session:
         yield session
 
 
 @pytest.fixture
-async def client(session_factory):  # type: ignore[no-untyped-def]
+async def client(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> AsyncGenerator[AsyncClient, None]:
     test_app = _create_test_app()
 
     async def _override() -> AsyncGenerator[AsyncSession, None]:

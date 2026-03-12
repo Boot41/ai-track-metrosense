@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Generator
+
 import pytest
 from httpx import AsyncClient
 
@@ -11,7 +13,7 @@ from app.services import auth_service
 
 
 @pytest.fixture
-def auth_override() -> None:
+def auth_override() -> Generator[None, None, None]:
     app.dependency_overrides[require_user] = lambda: User(
         id=1,
         email="test@example.com",

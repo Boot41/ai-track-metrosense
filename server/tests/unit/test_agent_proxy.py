@@ -7,7 +7,7 @@ import httpx
 import pytest
 
 from app.core.config import Settings
-from app.services import agent_proxy
+from app.services import agent_proxy, conversation_service
 
 
 @pytest.mark.asyncio
@@ -618,15 +618,11 @@ async def test_get_chat_response_persists_and_commits(monkeypatch: pytest.Monkey
     upsert = AsyncMock()
     append = AsyncMock(return_value="turn-id")
 
-    monkeypatch.setattr(agent_proxy.httpx, "AsyncClient", _FakeAsyncClient)
-    monkeypatch.setattr(
-        agent_proxy.conversation_service, "session_owner_id", AsyncMock(return_value=None)
-    )
-    monkeypatch.setattr(
-        agent_proxy.conversation_service, "derive_session_title", lambda _: "Hello title"
-    )
-    monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", upsert)
-    monkeypatch.setattr(agent_proxy.conversation_service, "append_turn", append)
+    monkeypatch.setattr(httpx, "AsyncClient", _FakeAsyncClient)
+    monkeypatch.setattr(conversation_service, "session_owner_id", AsyncMock(return_value=None))
+    monkeypatch.setattr(conversation_service, "derive_session_title", lambda _: "Hello title")
+    monkeypatch.setattr(conversation_service, "upsert_session", upsert)
+    monkeypatch.setattr(conversation_service, "append_turn", append)
     monkeypatch.setattr(
         agent_proxy,
         "build_runtime_context",
@@ -655,7 +651,7 @@ async def test_append_turn_flushes_before_audit_log_fk_is_used() -> None:
     db_session = AsyncMock()
     db_session.add_all = MagicMock()
 
-    turn_id = await agent_proxy.conversation_service.append_turn(
+    turn_id = await conversation_service.append_turn(
         session=db_session,
         session_id="s-1",
         user_message="hello",
@@ -682,15 +678,11 @@ async def test_get_chat_response_returns_when_persistence_fails(
     upsert = AsyncMock()
     append = AsyncMock(side_effect=RuntimeError("db write failure"))
 
-    monkeypatch.setattr(agent_proxy.httpx, "AsyncClient", _FakeAsyncClient)
-    monkeypatch.setattr(
-        agent_proxy.conversation_service, "session_owner_id", AsyncMock(return_value=None)
-    )
-    monkeypatch.setattr(
-        agent_proxy.conversation_service, "derive_session_title", lambda _: "Hello title"
-    )
-    monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", upsert)
-    monkeypatch.setattr(agent_proxy.conversation_service, "append_turn", append)
+    monkeypatch.setattr(httpx, "AsyncClient", _FakeAsyncClient)
+    monkeypatch.setattr(conversation_service, "session_owner_id", AsyncMock(return_value=None))
+    monkeypatch.setattr(conversation_service, "derive_session_title", lambda _: "Hello title")
+    monkeypatch.setattr(conversation_service, "upsert_session", upsert)
+    monkeypatch.setattr(conversation_service, "append_turn", append)
     monkeypatch.setattr(
         agent_proxy,
         "build_runtime_context",
@@ -727,15 +719,11 @@ async def test_get_chat_response_retries_once_on_input_token_limit(
     upsert = AsyncMock()
     append = AsyncMock(return_value="turn-id")
 
-    monkeypatch.setattr(agent_proxy.httpx, "AsyncClient", _OverflowThenSuccessClient)
-    monkeypatch.setattr(
-        agent_proxy.conversation_service, "session_owner_id", AsyncMock(return_value=None)
-    )
-    monkeypatch.setattr(
-        agent_proxy.conversation_service, "derive_session_title", lambda _: "Hello title"
-    )
-    monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", upsert)
-    monkeypatch.setattr(agent_proxy.conversation_service, "append_turn", append)
+    monkeypatch.setattr(httpx, "AsyncClient", _OverflowThenSuccessClient)
+    monkeypatch.setattr(conversation_service, "session_owner_id", AsyncMock(return_value=None))
+    monkeypatch.setattr(conversation_service, "derive_session_title", lambda _: "Hello title")
+    monkeypatch.setattr(conversation_service, "upsert_session", upsert)
+    monkeypatch.setattr(conversation_service, "append_turn", append)
     monkeypatch.setattr(
         agent_proxy,
         "build_runtime_context",
@@ -770,17 +758,11 @@ async def test_get_chat_response_injects_runtime_context(
     db_session = AsyncMock()
     db_session.add = MagicMock()
 
-    monkeypatch.setattr(agent_proxy.httpx, "AsyncClient", _CaptureMessageClient)
-    monkeypatch.setattr(
-        agent_proxy.conversation_service, "session_owner_id", AsyncMock(return_value=None)
-    )
-    monkeypatch.setattr(
-        agent_proxy.conversation_service, "derive_session_title", lambda _: "Hello title"
-    )
-    monkeypatch.setattr(agent_proxy.conversation_service, "upsert_session", AsyncMock())
-    monkeypatch.setattr(
-        agent_proxy.conversation_service, "append_turn", AsyncMock(return_value="turn-id")
-    )
+    monkeypatch.setattr(httpx, "AsyncClient", _CaptureMessageClient)
+    monkeypatch.setattr(conversation_service, "session_owner_id", AsyncMock(return_value=None))
+    monkeypatch.setattr(conversation_service, "derive_session_title", lambda _: "Hello title")
+    monkeypatch.setattr(conversation_service, "upsert_session", AsyncMock())
+    monkeypatch.setattr(conversation_service, "append_turn", AsyncMock(return_value="turn-id"))
     monkeypatch.setattr(
         agent_proxy,
         "build_runtime_context",

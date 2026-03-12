@@ -12,7 +12,7 @@ class RunRequest(BaseModel):
     appName: str
     userId: str
     sessionId: str
-    newMessage: dict | None = None
+    newMessage: dict[str, object] | None = None
     streaming: bool = False
 
 
@@ -36,7 +36,7 @@ async def create_session(
 async def run_agent(
     _: RunRequest,
     x_internal_token: str | None = Header(default=None, alias="X-Internal-Token"),
-) -> list[dict]:
+) -> list[dict[str, object]]:
     _require_token(x_internal_token)
     return [
         {
